@@ -4,6 +4,7 @@ import {
   FaClipboardList,
   FaEnvelopeOpenText,
   FaUserCircle,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -18,16 +19,19 @@ const AdminDashboard = () => {
   return (
     <>
       {/* Elegant Top Bar with Logout */}
-      <div className="flex justify-between items-center px-6 py-4 bg-white shadow-md sticky top-0 z-10">
-        <h1 className="text-2xl font-bold text-gray-800">EduMon Admin Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-full font-semibold shadow-lg transition duration-200"
-        >
-          Logout
-        </button>
-      </div>
-
+      <div className="flex justify-between items-center px-6 py-4 sticky top-0 z-10">
+              <h1 className="text-2xl font-bold text-gray-800">
+                EduMon Admin Dashboard
+              </h1>
+              <button
+                onClick={handleLogout}
+                className="text-red-600 hover:text-red-800 text-2xl transition"
+                title="Logout"
+              >
+                <FaSignOutAlt />
+              </button>
+            </div>
+      {/* 
       <h2 className="text-5xl font-bold mb-4 text-center pt-6">Dashboard Features</h2>
       <p className="text-center text-sm mb-6 px-8 sm:px-20 md:px-32 lg:px-44 text-gray-600">
         The EduMon dashboard empowers school administrators with a comprehensive suite
@@ -35,7 +39,7 @@ const AdminDashboard = () => {
         for clarity and control, the system ensures seamless operation of academic
         workflows, enhances communication, and simplifies everyday administrative tasks.
         Explore the core features below to keep your school organized and up to date.
-      </p>
+      </p> */}
 
       <div className="px-6 sm:px-20 grid grid-cols-1 md:grid-cols-2 gap-6 pb-20 pt-10">
         <div className="bg-green-100 shadow-lg rounded-2xl p-6 text-center">

@@ -2,21 +2,21 @@ import { Bars3Icon, BellIcon, CurrencyRupeeIcon, HomeIcon, UsersIcon, XMarkIcon 
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
-const StudentSideBar = () => {
+const TeacherSideBar = () => {
   const [isOpen , setIsOpen] = useState(true)
   const location = useLocation()
   const menuItems = [
-    {name: "Dashboard" , path: "/student/dashboard" , icon: <HomeIcon className='w-6 h-6' />},
-    {name: "Profile" , path: "/student/profile" , icon: <UsersIcon className='w-6 h-6' />},
-    {name: "Attendence" , path: "/student/attendence" , icon: <UsersIcon className='w-6 h-6' />},
-    {name: "Assignment" , path: "/student/assignment" , icon: <CurrencyRupeeIcon className='w-6 h-6' />},
-    {name: "Notices" , path: "/student/notices" , icon: <BellIcon className='w-6 h-6' />},
+    {name: "Dashboard" , path: "/teacher/dashboard" , icon: <HomeIcon className='w-6 h-6' />},
+    {name: "Profile" , path: "/teacher/profile" , icon: <UsersIcon className='w-6 h-6' />},
+    {name: "Mark Attendence" , path: "/teacher/attendence" , icon: <UsersIcon className='w-6 h-6' />},
+    {name: "Create Assignment" , path: "/teacher/assignment" , icon: <CurrencyRupeeIcon className='w-6 h-6' />},
+    {name: "Notices" , path: "/teacher/notices" , icon: <BellIcon className='w-6 h-6' />},
   ]
   return (
     <div className={`flex ${isOpen?"w-64":"w-20"} min-h-screen bg-sky-600 text-white transition-all duration-300`}>
       <div className='flex flex-col w-full'>
         <div className='flex justify-between p-4 '>
-            <span className={`text-lg font-semibold ${isOpen?"block":"hidden"}`}>Student Panel</span>
+            <span className={`text-lg font-semibold ${isOpen?"block":"hidden"}`}>Teacher Panel</span>
             <button onClick={()=>setIsOpen(!isOpen)}>
             {isOpen? <XMarkIcon className='w-6 h-6'/> : <Bars3Icon className='w-6 h-6'/>}
             </button>
@@ -33,5 +33,4 @@ const StudentSideBar = () => {
     </div>
   )
 }
-
-export default StudentSideBar
+export default TeacherSideBar

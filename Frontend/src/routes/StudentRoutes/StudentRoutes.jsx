@@ -2,17 +2,20 @@ import React from 'react'
 import StudentDashboard from '../../pages/Student/StudentDashboard'
 import StudentLayout from '../../pages/Student/StudentLayout'
 import { Route, Routes } from 'react-router-dom'
+import StudentProfile from '../../pages/Student/StudentProfile'
+import Assignment from '../../pages/Student/Assignment'
+import Attendence from '../../pages/Student/Attendence'
+import StudentNotices from '../../pages/Student/StudentNotices'
 
 const StudentRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<StudentLayout />}>
         <Route path="dashboard" element={<StudentDashboard />} />
-        {/* <Route path="student" element={<StudentManagement />} />
-        <Route path="teacher" element={<TeacherManagement />} />
-        <Route path="fee" element={<FeeManagement />} />
-        <Route path="notice" element={<NoticeManagement />} />
-        <Route path="*" element={<NotFound />} /> */}
+        <Route path='profile' element={<StudentProfile/>}/>
+        <Route path='attendence' element={<Attendence/>}/>
+        <Route path='assignment' element={<Assignment/>}/>
+        <Route path='notices' element={<StudentNotices/>}/>
       </Route>
     </Routes>
   )

@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
-const StudentDashboard = () => {
+const TeacherDashboard = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,7 +21,7 @@ const StudentDashboard = () => {
       {/* Top Bar with Logout Icon */}
       <div className="flex justify-between items-center px-6 py-4 sticky top-0 z-10">
         <h1 className="text-2xl font-bold text-gray-800">
-          EduMon Student Dashboard
+          EduMon Teacher Dashboard
         </h1>
         <button
           onClick={handleLogout}
@@ -36,8 +36,8 @@ const StudentDashboard = () => {
         <div className="bg-green-100 shadow-lg rounded-2xl p-6 text-center">
           <FaUserPlus className="text-green-700 text-4xl mb-4 mx-auto" />
           <h3 className="text-xl font-bold">Attendance</h3>
-          <p className="text-gray-600">Know your attendance</p>
-          <Link to={"/student/attendence"}>
+          <p className="text-gray-600">Mark attendance</p>
+          <Link to={"/teacher/attendence"}>
             <button className="mt-4 bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition">
               Attendance
             </button>
@@ -47,8 +47,8 @@ const StudentDashboard = () => {
         <div className="bg-yellow-100 shadow-lg rounded-2xl p-6 text-center">
           <FaClipboardList className="text-yellow-700 text-4xl mb-4 mx-auto" />
           <h3 className="text-xl font-bold">Assignment</h3>
-          <p className="text-gray-600">Assignment tasks</p>
-          <Link to={"/student/assignment"}>
+          <p className="text-gray-600">Create Assignment</p>
+          <Link to={"/teacher/assignment"}>
             <button className="mt-4 bg-yellow-700 text-white px-4 py-2 rounded hover:bg-yellow-800 transition">
               Assignment
             </button>
@@ -59,7 +59,7 @@ const StudentDashboard = () => {
           <FaEnvelopeOpenText className="text-blue-700 text-4xl mb-4 mx-auto" />
           <h3 className="text-xl font-bold">Notices</h3>
           <p className="text-gray-600">Notices by admin.</p>
-          <Link to={"/student/notices"}>
+          <Link to={"/teacher/notices"}>
             <button className="mt-4 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition">
               Notices
             </button>
@@ -70,7 +70,7 @@ const StudentDashboard = () => {
           <FaUserCircle className="text-purple-700 text-4xl mb-4 mx-auto" />
           <h3 className="text-xl font-bold">Profile</h3>
           <p className="text-gray-600">Your profile.</p>
-          <Link to={"/student/profile"}>
+          <Link to={"/teacher/profile"}>
             <button className="mt-4 bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800 transition">
               Profile
             </button>
@@ -81,4 +81,5 @@ const StudentDashboard = () => {
   );
 };
 
-export default StudentDashboard;
+
+export default TeacherDashboard

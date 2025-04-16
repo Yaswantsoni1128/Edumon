@@ -11,6 +11,7 @@ import Home from './components/Home';
 import ContactUs from './components/ContactUs';
 import LayoutLandingPage from './pages/LandingPage/LayoutLandingPage';
 import StudentRoutes from './routes/StudentRoutes/StudentRoutes';
+import TeacherRoutes from './routes/TeacherRoutes/TeacherRoutes';
 
 const App = () => {
   return (
@@ -31,6 +32,8 @@ const App = () => {
         <Route path="/admin/*" element={<AdminRoutes />} />
         {/* Student routes */}
         <Route path="/student/*" element={<StudentRoutes />} />
+        {/* Teacher routes */}
+        <Route path="/teacher/*" element={<TeacherRoutes />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
