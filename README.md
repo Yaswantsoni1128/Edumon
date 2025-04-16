@@ -1,4 +1,4 @@
-# Progothon project
+# Edumon: Smart School Tracker
 
 
 ### Steps to Run Locally
