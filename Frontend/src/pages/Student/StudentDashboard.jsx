@@ -45,7 +45,7 @@ const StudentDashboard = () => {
           <FaUserPlus className="text-green-700 text-4xl mb-4 mx-auto" />
           <h3 className="text-xl font-bold">Attendance</h3>
           <p className="text-gray-600">Know your attendance</p>
-          <Link to={"/student/attendence"}>
+          <Link to={`/student/attendence/${id}`}>
             <button className="mt-4 bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition">
               Attendance
             </button>

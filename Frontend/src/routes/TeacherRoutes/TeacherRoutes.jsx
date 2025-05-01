@@ -13,7 +13,7 @@ const TeacherRoutes = () => {
       <Route path="/" element={<TeacherLayout />}>
         <Route path="dashboard" element={<TeacherDashboard />} />
         <Route path='profile/:id' element={<TeacherProfile/>}/>
-        <Route path='attendence' element={<MarkAttendence/>}/>
+        <Route path='attendence/:id' element={<MarkAttendence/>}/>
         <Route path='assignment' element={<CreateAssignment/>}/>
         <Route path='notices' element={<TeacherNotices/>}/>
       </Route>

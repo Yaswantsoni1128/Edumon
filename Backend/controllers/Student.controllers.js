@@ -191,3 +191,25 @@ export const getStudentProfile = async (req, res) => {
   }
 };
 
+// Get students by class
+export const getStudentsByClass = async (req, res) => {
+  try {
+    const { selectedClass } = req.params;
+
+    const students = await Student.find({ class: selectedClass }).sort({ createdAt: -1 });
+
+    if (!students || students.length === 0) {
+      return res.status(404).json({
+        message: `No students found in class ${selectedClass}`,
+      });
+    }
+
+    res.status(200).json({
+      message: `Students of class ${selectedClass} fetched successfully`,
+      data: students,
+    });
+  } catch (error) {
+    console.error("Error fetching students by class:", error);
+    res.status(500).json({ message: "Server error while fetching students by class" });
+  }
+};

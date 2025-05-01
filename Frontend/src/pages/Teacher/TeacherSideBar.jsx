@@ -14,7 +14,7 @@ const TeacherSideBar = () => {
   const menuItems = [
     {name: "Dashboard" , path: "/teacher/dashboard" , icon: <HomeIcon className='w-6 h-6' />},
     {name: "Profile" , path: `/teacher/profile/${id}` , icon: <UsersIcon className='w-6 h-6' />},
-    {name: "Mark Attendence" , path: "/teacher/attendence" , icon: <UsersIcon className='w-6 h-6' />},
+    {name: "Mark Attendence" , path: `/teacher/attendence/${id}` , icon: <UsersIcon className='w-6 h-6' />},
     {name: "Create Assignment" , path: "/teacher/assignment" , icon: <CurrencyRupeeIcon className='w-6 h-6' />},
     {name: "Notices" , path: "/teacher/notices" , icon: <BellIcon className='w-6 h-6' />},
   ]

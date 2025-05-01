@@ -20,7 +20,7 @@ const StudentSideBar = () => {
   const menuItems = [
     {name: "Dashboard", path: "/student/dashboard", icon: <HomeIcon className='w-6 h-6' />},
     {name: "Profile", path: `/student/profile/${id}`, icon: <UsersIcon className='w-6 h-6' />},
-    {name: "Attendence", path: "/student/attendence", icon: <UsersIcon className='w-6 h-6' />},
+    {name: "Attendence", path: `/student/attendence/${id}`, icon: <UsersIcon className='w-6 h-6' />},
     {name: "Assignment", path: "/student/assignment", icon: <CurrencyRupeeIcon className='w-6 h-6' />},
     {name: "Notices", path: "/student/notices", icon: <BellIcon className='w-6 h-6' />},
   ]

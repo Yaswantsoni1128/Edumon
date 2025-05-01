@@ -92,9 +92,10 @@ const FeeManagement = () => {
       student._id?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalFeesCollected = fees
-    .filter((fee) => fee.status === "Paid")
-    .reduce((sum, fee) => sum + (fee.amount || 0), 0);
+  const totalFeesCollected = students.reduce((sum, student) => {
+    const fee = getFeeByStudentId(student._id);
+    return sum + (fee?.amount || 0);
+  }, 0);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
