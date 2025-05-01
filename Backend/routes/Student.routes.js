@@ -5,6 +5,7 @@ import {
   getStudentById,
   updateStudent,
   deleteStudent,
+  getStudentProfile
 } from "../controllers/Student.controllers.js";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get("/", getAllStudents);
 router.get("/:id", getStudentById);
 router.put("/:id", updateStudent);
 router.delete("/:id", deleteStudent);
+router.get('/profile/:id', getStudentProfile);
 
 export default router;

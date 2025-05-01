@@ -1,6 +1,7 @@
 import Teacher from "../models/Teacher.models.js";
 import bcrypt from "bcrypt"
 import User from "../models/User.models.js";
+import mongoose from "mongoose"
 
 export const addTeacher = async (req, res) => {
   try {
@@ -84,5 +85,46 @@ export const deleteTeacher = async (req, res) => {
     res.status(200).json({ message: "Teacher deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete teacher", error });
+  }
+};
+
+
+// get teacher by id 
+
+export const getTeacherById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("id:", id);
+
+    // Validate the provided ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid teacher ID format" });
+    }
+
+    // Find the user using the provided ID
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user_email = user.email;
+
+    // Find teacher using the email associated with the user
+    const teacher = await Teacher.findOne({ email: user_email });
+    console.log("teacher:", teacher);
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    // Return the teacher data
+    res.status(200).json({
+      success: true,
+      message: "Teacher profile fetched successfully",
+      data: teacher,
+    });
+  } catch (error) {
+    console.error("Error fetching teacher:", error);
+    res.status(500).json({ message: "Server error while fetching teacher" });
   }
 };

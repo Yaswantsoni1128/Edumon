@@ -3,11 +3,17 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 const TeacherSideBar = () => {
+  const user = JSON.parse(localStorage.getItem("user")) // Parse the user object from localStorage
+    console.log("user:", user)
+  
+    // Check if the user exists and has the _id property
+    const id = user ? user._id : null
+    
   const [isOpen , setIsOpen] = useState(true)
   const location = useLocation()
   const menuItems = [
     {name: "Dashboard" , path: "/teacher/dashboard" , icon: <HomeIcon className='w-6 h-6' />},
-    {name: "Profile" , path: "/teacher/profile" , icon: <UsersIcon className='w-6 h-6' />},
+    {name: "Profile" , path: `/teacher/profile/${id}` , icon: <UsersIcon className='w-6 h-6' />},
     {name: "Mark Attendence" , path: "/teacher/attendence" , icon: <UsersIcon className='w-6 h-6' />},
     {name: "Create Assignment" , path: "/teacher/assignment" , icon: <CurrencyRupeeIcon className='w-6 h-6' />},
     {name: "Notices" , path: "/teacher/notices" , icon: <BellIcon className='w-6 h-6' />},

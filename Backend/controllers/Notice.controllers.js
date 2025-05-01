@@ -67,3 +67,50 @@ export const updateNotice = async (req, res) => {
     res.status(500).json({ message: 'Failed to update notice.' });
   }
 };
+
+// get students notice 
+
+
+export const getStudentNotices = async (req, res) => {
+  try {
+    // Step 1: Retrieve all admin users
+    const adminUsers = await User.find({ role: "admin" }).select("_id");
+    const adminIds = adminUsers.map(user => user._id);
+
+    // Step 2: Fetch notices posted by admins with target 'All' or 'Students'
+    const notices = await Notice.find({
+      postedBy: { $in: adminIds },
+      target: { $in: ["All", "Students"] }
+    })
+      .populate("postedBy", "name")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(notices);
+  } catch (error) {
+    console.error("Error fetching student notices:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// get teachers notices
+
+export const getTeacherNotices = async (req, res) => {
+  try {
+    // Find all admin users
+    const adminUsers = await User.find({ role: "admin" }).select("_id");
+    const adminIds = adminUsers.map(user => user._id);
+
+    // Fetch notices posted by admins and visible to teachers
+    const notices = await Notice.find({
+      postedBy: { $in: adminIds },
+      target: { $in: ['All', 'Teachers'] }
+    })
+      .populate("postedBy", "name")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(notices);
+  } catch (error) {
+    console.error("Error fetching teacher notices:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};

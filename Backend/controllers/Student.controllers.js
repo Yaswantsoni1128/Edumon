@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import Student from "../models/Student.models.js";
-import User from "../models/User.models.js"; // You forgot to import this
+import User from "../models/User.models.js";
 
+// Add Student
 // Add Student
 export const addStudent = async (req, res) => {
   try {
@@ -27,11 +29,11 @@ export const addStudent = async (req, res) => {
       contactNumber: parentContact,
       firstLogin: true,
     });
-
     await newUser.save();
 
-    // Create student in Student collection
+    // Create student in Student collection with userId
     const newStudent = new Student({
+      userId: newUser._id,
       name,
       email,
       rollNo,
@@ -52,11 +54,12 @@ export const addStudent = async (req, res) => {
   }
 };
 
+
 // Get all students
 export const getAllStudents = async (req, res) => {
   try {
     const students = await Student.find().sort({ createdAt: -1 });
-    res.json(students);
+    res.status(200).json(students);
   } catch (error) {
     console.error("Error fetching students:", error);
     res.status(500).json({ message: "Server error while fetching students" });
@@ -64,27 +67,52 @@ export const getAllStudents = async (req, res) => {
 };
 
 // Get student by ID
+// Get student by userId
 export const getStudentById = async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const { id } = req.params;
+    console.log("id:", id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid student ID format" });
+    }
+
+    // Find the user using the userId (id param is userId here)
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user_email = user.email;
+
+    // Find student using email
+    const student = await Student.findOne({ email: user_email });
+    console.log("student:", student);
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    res.json(student);
+    res.status(200).json({
+      success: true,
+      message: "Student profile fetched successfully",
+      data: student,
+    });
   } catch (error) {
     console.error("Error fetching student:", error);
     res.status(500).json({ message: "Server error while fetching student" });
   }
 };
 
+
+
 // Update student
 export const updateStudent = async (req, res) => {
   try {
     const { name, email, rollNo, class: studentClass, parentContact } = req.body;
+    const { id } = req.params;
 
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findById(id);
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
@@ -97,7 +125,7 @@ export const updateStudent = async (req, res) => {
     student.parentContact = parentContact || student.parentContact;
 
     const updatedStudent = await student.save();
-    res.json(updatedStudent);
+    res.status(200).json(updatedStudent);
   } catch (error) {
     console.error("Error updating student:", error);
     res.status(500).json({ message: "Server error while updating student" });
@@ -107,16 +135,59 @@ export const updateStudent = async (req, res) => {
 // Delete student
 export const deleteStudent = async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const { id } = req.params;
+
+    const student = await Student.findById(id);
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
     await student.deleteOne();
-    res.json({ message: "Student deleted successfully" });
+    res.status(200).json({ message: "Student deleted successfully" });
   } catch (error) {
     console.error("Error deleting student:", error);
     res.status(500).json({ message: "Server error while deleting student" });
   }
 };
+
+
+// Get logged-in student's profile using userId
+export const getStudentProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        statusCode: 400,
+        success: false,
+        message: "Invalid student ID",
+      });
+    }
+
+    const student = await Student.findOne({ userId: id });
+
+    if (!student) {
+      return res.status(404).json({
+        statusCode: 404,
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+
+    res.status(200).json({
+      statusCode: 200,
+      success: true,
+      message: "Student profile fetched successfully",
+      data: student,
+    });
+  } catch (error) {
+    console.error("Error fetching student profile:", error);
+    res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: "Internal server error while fetching profile",
+    });
+  }
+};
+

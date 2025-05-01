@@ -9,10 +9,18 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 const StudentDashboard = () => {
+  const user = JSON.parse(localStorage.getItem("user")) // Parse the user object from localStorage
+  console.log("user:", user)
+
+  // Check if the user exists and has the _id property
+  const id = user ? user._id : null
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user")
+    localStorage.removeItem("userId")
     navigate("/login");
   };
 
@@ -70,7 +78,7 @@ const StudentDashboard = () => {
           <FaUserCircle className="text-purple-700 text-4xl mb-4 mx-auto" />
           <h3 className="text-xl font-bold">Profile</h3>
           <p className="text-gray-600">Your profile.</p>
-          <Link to={"/student/profile"}>
+          <Link to={`/student/profile/${id}`}>
             <button className="mt-4 bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800 transition">
               Profile
             </button>
