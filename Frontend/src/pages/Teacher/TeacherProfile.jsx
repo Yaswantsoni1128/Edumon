@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, User, BookOpen, Briefcase } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, User, BookOpen, ListChecks } from 'lucide-react';
 
 const TeacherProfile = () => {
   const { id } = useParams();
@@ -68,6 +68,7 @@ const TeacherProfile = () => {
         >
           <ArrowLeft size={18} /> Go Back
         </button>
+
         <div className="flex flex-col items-center">
           <div className="bg-indigo-100 p-4 rounded-full mb-4">
             <User size={40} className="text-indigo-600" />
@@ -83,11 +84,24 @@ const TeacherProfile = () => {
           <div className="flex items-center gap-2 text-gray-700">
             <BookOpen size={18} /> <span>Subject: {teacher.subject}</span>
           </div>
-          
           <div className="flex items-center gap-2 text-gray-700">
             <Phone size={18} /> <span>Phone: {teacher.phone}</span>
           </div>
-          
+
+          {/* Assigned Classes */}
+          {teacher.assignedClasses?.length > 0 && (
+            <div className="flex items-start gap-2 text-gray-700">
+              <ListChecks size={18} className="mt-1" />
+              <div>
+                <p className="font-semibold">Assigned Classes:</p>
+                <ul className="list-disc list-inside text-sm">
+                  {teacher.assignedClasses.map((cls, index) => (
+                    <li key={index}>{cls}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

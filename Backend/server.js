@@ -8,6 +8,7 @@ import studentRoutes from "./routes/Student.routes.js"
 import teacherRoutes from "./routes/Teacher.routes.js";
 import feeRoutes from "./routes/Fee.routes.js"; 
 import noticeRoutes from "./routes/Notice.routes.js"
+import assignmentRoutes from "./routes/Assignment.routes.js"
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/students', studentRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/fees", feeRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/assignments', assignmentRoutes);
 
 
 // Root route
