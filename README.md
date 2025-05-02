@@ -27,6 +27,10 @@
    MONGO_URL = YOUR_MONGO_URI
    SECRET_KEY = YOUR_SECRET_KEY
    ```
+      - Create a `.env` file in the Frontend directory and add the necessary configurations.
+   ```sh
+   VITE_BASE_URL = base_url_backend
+   ```
 
 4. Start the development servers:
    ```sh
