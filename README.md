@@ -35,9 +35,9 @@
 4. Start the development servers:
    ```sh
    cd Backend
-   npm run dev  # Runs backend server
+   npm start  # Runs backend server
    cd ../Frontend
-   npm start    # Runs frontend server
+   npm run dev    # Runs frontend server
    ```
 
 ---
