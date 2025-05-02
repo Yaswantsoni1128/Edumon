@@ -16,7 +16,7 @@ const Assignment = () => {
 
       try {
         const token = localStorage.getItem('token'); 
-        const response = await axios.get('http://localhost:8000/api/assignments/student', {
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/assignments/student`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

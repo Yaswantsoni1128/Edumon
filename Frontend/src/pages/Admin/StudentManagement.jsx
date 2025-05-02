@@ -20,7 +20,7 @@ const StudentManagement = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/students");
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/students`);
       setStudents(res.data);
     } catch (err) {
       console.error("Failed to fetch students:", err);
@@ -43,7 +43,7 @@ const StudentManagement = () => {
     }
 
     try {
-      await axios.post("http://localhost:8000/api/students", {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/students`, {
         name,
         email,
         rollNo,
@@ -67,7 +67,7 @@ const StudentManagement = () => {
 
   const handleDeleteStudent = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/students/${id}`);
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/students/${id}`);
       fetchStudents();
     } catch (err) {
       console.error("Failed to delete student:", err);
@@ -82,7 +82,7 @@ const StudentManagement = () => {
     }
 
     try {
-      await axios.put(`http://localhost:8000/api/students/${studentToUpdate._id}`, {
+      await axios.put(`${import.meta.env.VITE_BASE_URL}/api/students/${studentToUpdate._id}`, {
         name,
         email,
         rollNo,

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = `${import.meta.env.VITE_BASE_URL}/api`;
 
 const Attendance = () => {
   const { id } = useParams();

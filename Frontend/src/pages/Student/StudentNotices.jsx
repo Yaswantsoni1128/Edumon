@@ -8,7 +8,7 @@ const StudentNotices = () => {
   useEffect(() => {
     const fetchStudentNotices = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/notices/student');
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/notices/student`);
         setNotices(res.data);
         setLoading(false);
       } catch (err) {

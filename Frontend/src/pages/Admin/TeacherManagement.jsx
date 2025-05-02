@@ -31,7 +31,7 @@ const TeacherManagement = () => {
 
   const fetchTeachers = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/teachers/all");
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/teachers/all`);
       setTeachers(res.data);
     } catch (err) {
       toast.error("Failed to fetch teachers!", { autoClose: 2000 });
@@ -53,7 +53,7 @@ const TeacherManagement = () => {
       assignedClasses: formData.assignedClasses.split(",").map((cls) => cls.trim()),
     };
     try {
-      const res = await axios.post("http://localhost:8000/api/teachers/add", data);
+      const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/teachers/add`, data);
       setTeachers((prev) => [...prev, res.data]);
       setShowAddModal(false);
       resetForm();
@@ -83,7 +83,7 @@ const TeacherManagement = () => {
     };
     try {
       const res = await axios.put(
-        `http://localhost:8000/api/teachers/update/${currentTeacherId}`,
+        `${import.meta.env.VITE_BASE_URL}/api/teachers/update/${currentTeacherId}`,
         data
       );
       setTeachers((prev) =>
@@ -103,7 +103,7 @@ const TeacherManagement = () => {
       return;
     }
     try {
-      await axios.delete(`http://localhost:8000/api/teachers/delete/${id}`);
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/teachers/delete/${id}`);
       setTeachers((prev) => prev.filter((t) => t._id !== id));
       toast.success("Teacher deleted successfully!", { autoClose: 2000 });
     } catch (err) {

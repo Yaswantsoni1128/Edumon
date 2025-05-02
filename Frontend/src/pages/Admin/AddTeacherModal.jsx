@@ -10,7 +10,7 @@ const AddTeacherModal = ({ onClose, onTeacherAdded }) => {
   useEffect(() => {
     const fetchClassOptions = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/classes");
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/classes`);
         setClassOptions(res.data);
       } catch (err) {
         console.error("Error fetching class options:", err);
@@ -21,7 +21,7 @@ const AddTeacherModal = ({ onClose, onTeacherAdded }) => {
 
   const handleAdd = async () => {
     try {
-      await axios.post("http://localhost:8000/api/teacher", {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/teacher`, {
         name,
         subject,
         assignedClass,

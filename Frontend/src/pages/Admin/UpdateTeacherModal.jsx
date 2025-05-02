@@ -10,7 +10,7 @@ const UpdateTeacherModal = ({ teacher, onClose, onTeacherUpdated }) => {
   useEffect(() => {
     const fetchClassOptions = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/classes");
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/classes`);
         setClassOptions(res.data);
       } catch (err) {
         console.error("Error fetching class options:", err);
@@ -21,7 +21,7 @@ const UpdateTeacherModal = ({ teacher, onClose, onTeacherUpdated }) => {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://localhost:8000/api/teacher/${teacher._id}`, {
+      await axios.put(`${import.meta.env.VITE_BASE_URL}/api/teacher/${teacher._id}`, {
         name,
         subject,
         assignedClass,

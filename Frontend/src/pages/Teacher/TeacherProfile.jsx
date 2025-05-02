@@ -20,7 +20,7 @@ const TeacherProfile = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/api/teachers/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/teachers/${id}`);
         const { success, data, message } = res.data;
 
         if (success) {

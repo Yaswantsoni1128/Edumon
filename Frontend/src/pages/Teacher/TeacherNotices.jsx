@@ -9,7 +9,7 @@ const TeacherNotices = () => {
     const fetchTeacherNotices = async () => {
       try {
         // Make sure to include the full backend URL if needed
-        const res = await axios.get('http://localhost:8000/api/notices/teacher');
+        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/notices/teacher`);
         
         // Check if response data is an array
         if (Array.isArray(res.data)) {

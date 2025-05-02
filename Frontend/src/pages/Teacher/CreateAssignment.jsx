@@ -26,7 +26,7 @@ const CreateAssignment = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/teachers/${id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/teachers/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           }
@@ -63,7 +63,7 @@ const CreateAssignment = () => {
     setStatus({ loading: true, message: '', error: false });
 
     try {
-      await axios.post('http://localhost:8000/api/assignments', formData, {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/assignments`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

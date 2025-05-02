@@ -22,7 +22,7 @@ const FeeManagement = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/students");
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/students`);
       setStudents(res.data);
     } catch (err) {
       console.error("Error fetching students:", err);
@@ -31,7 +31,7 @@ const FeeManagement = () => {
 
   const fetchFees = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/fees");
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/fees`);
       setFees(res.data);
     } catch (err) {
       console.error("Error fetching fees:", err);
@@ -70,11 +70,11 @@ const FeeManagement = () => {
     const fee = getFeeByStudentId(selectedStudent._id);
     try {
       if (fee) {
-        await axios.put(`http://localhost:8000/api/fees/update/${fee._id}`, {
+        await axios.put(`${import.meta.env.VITE_BASE_URL}/api/fees/update/${fee._id}`, {
           ...formData,
         });
       } else {
-        await axios.post(`http://localhost:8000/api/fees/add`, {
+        await axios.post(`${import.meta.env.VITE_BASE_URL}/api/fees/add`, {
           student: selectedStudent._id,
           ...formData,
         });

@@ -22,7 +22,7 @@ const NoticeManagement = () => {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/notices");
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/notices`);
       setNotices(res.data);
     } catch (err) {
       console.error(err);
@@ -31,7 +31,7 @@ const NoticeManagement = () => {
 
   const deleteNotice = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/notices/${id}`);
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/notices/${id}`);
       fetchNotices();
     } catch (err) {
       console.error(err);
@@ -40,7 +40,7 @@ const NoticeManagement = () => {
 
   const handleAddNotice = async () => {
     try {
-      await axios.post("http://localhost:8000/api/notices", formData);
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/api/notices`, formData);
       resetForm();
       fetchNotices();
     } catch (err) {
@@ -50,7 +50,7 @@ const NoticeManagement = () => {
 
   const handleUpdateNotice = async () => {
     try {
-      await axios.put(`http://localhost:8000/api/notices/${editNoticeId}`, formData);
+      await axios.put(`${import.meta.env.VITE_BASE_URL}/api/notices/${editNoticeId}`, formData);
       resetForm();
       fetchNotices();
     } catch (err) {
