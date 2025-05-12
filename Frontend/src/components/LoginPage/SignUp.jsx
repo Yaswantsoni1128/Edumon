@@ -149,8 +149,9 @@ const SignUp = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full rounded bg-gradient-to-r from-sky-600 to-sky-700 px-4 py-2 text-white font-semibold hover:opacity-90"
+              disabled= "true"
+              // disabled={loading}
+              className="w-full  rounded bg-gradient-to-r from-sky-600 to-sky-700 px-4 py-2 text-white font-semibold hover:opacity-90"
             >
               {loading ? "Creating Account..." : "SIGN UP"}
             </button>

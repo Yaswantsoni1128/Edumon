@@ -52,7 +52,7 @@ const Services = () => {
         transition={{ duration: 0.8 }}
       >
         <h2 className="text-4xl font-bold text-gray-900">Key Features</h2>
-        <p className="w-full md:w-3/5 mx-auto text-lg text-gray-700 mt-4 leading-relaxed">
+        <p className="w-1/2 md:w-3/5 mx-auto text-lg text-gray-700 mt-4 leading-relaxed">
           Explore our advanced educational solutions designed for better management and learning.
         </p>
       </motion.div>
