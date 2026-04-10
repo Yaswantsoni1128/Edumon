@@ -1,51 +1,70 @@
 import React from 'react'
-import Contact from './LandingPage/Contact'
-import Footer from './LandingPage/Footer'
-import Navbar from './LandingPage/Navbar'
 import ContactCard from './LandingPage/ContactCard'
+import { motion } from 'framer-motion'
+import { MapPin, Mail, Phone, MessageSquare } from 'lucide-react'
 
 const ContactUs = () => {
   const cards = [
     {
-      icon: "./circle.png",
+      icon: MapPin,
       title: "Our Address",
-      description: `Edumon\nIIIT Una\nHimachal Pradesh`
+      description: `Edumon HQ\nIIIT Una, Himachal Pradesh\nIndia - 177209`
     },
     {
-      icon: "./mail.png",
+      icon: Mail,
       title: "Email Us",
-      description: `23261@iiitu.ac.in\nsupport@edumon.com`
+      description: `connect@edumon.com\nsupport@edumon.com`
     },
     {
-      icon: "./contact-us.png",
+      icon: Phone,
       title: "Call Us",
-      description: "+91 8003999085"
+      description: "+91 8003999085\nMon-Fri, 9am - 6pm"
     }
   ];
 
   return (
-    <div className=''>
-      
-  return (
-    <div className="py-16 px-6 bg-gray-50">
-      {/* Heading */}
-      <div className="text-center mb-10">
-        <p className="text-4xl font-bold text-gray-900">Contact</p>
-        <p className="w-3/5 mx-auto text-lg text-gray-700 mt-2 leading-relaxed">
-          Want to know more about our solutions and how we can help you? Please provide your details, and we will get in touch with you.
-        </p>
-      </div>
+    <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50/30 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-16 space-y-4"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 text-orange-700 text-[10px] font-black uppercase tracking-widest border border-orange-100">
+            <MessageSquare size={14} />
+            <span>Get in Touch</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight uppercase">
+            Contact <span className="text-orange-600">Our team</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-[10px] md:text-xs text-gray-500 font-black uppercase tracking-[0.15em] leading-relaxed">
+            Have questions? We're here to help you revolutionize school management.
+          </p>
+        </motion.div>
 
-      {/* Contact Cards */}
-      <div className="flex flex-wrap justify-center gap-10">
-        {cards.map((item, idx) => (
-          <ContactCard key={idx} icon={item.icon} title={item.title} description={item.description} />
-        ))}
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center"
+        >
+          {cards.map((item, idx) => (
+            <motion.div
+              key={idx}
+              variants={{ hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }}
+              transition={{ duration: 0.5 }}
+              className="w-full"
+            >
+              <ContactCard icon={item.icon} title={item.title} description={item.description} />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </div>
   );
-    </div>
-  )
 }
 
 export default ContactUs
