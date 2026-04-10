@@ -7,12 +7,14 @@ import {
   getTeacherById
 } from "../controllers/Teacher.controllers.js";
 
+import { protectAdmin } from "../middlewares/Auth.middlewares.js";
+
 const router = express.Router();
 
-router.post("/add", addTeacher);
-router.get("/all", getAllTeachers);
-router.put("/update/:id", updateTeacher);
-router.delete("/delete/:id", deleteTeacher);
+router.post("/", protectAdmin, addTeacher);
+router.get("/", getAllTeachers);
+router.put("/:id", protectAdmin, updateTeacher);
+router.delete("/:id", protectAdmin, deleteTeacher);
 router.get("/:id", getTeacherById);
 
 export default router;

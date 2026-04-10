@@ -1,90 +1,140 @@
 import Teacher from "../models/Teacher.models.js";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 import User from "../models/User.models.js";
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import { getPaginatedResponse } from "../utils/pagination.js";
 
+import sendWelcomeEmail from "../utils/MailSender.js";
+
+// Add Teacher
 export const addTeacher = async (req, res) => {
   try {
-    const { name, email, phone, subject, assignedClasses } = req.body;
+    const { name, email, contactNumber, subject, assignedClasses } = req.body;
 
-    const existingTeacher = await Teacher.findOne({email})
-    if(existingTeacher){
-      return res.status(400).json({message: "Teacher already exists."})
+    // Check if both User and Teacher exist (using email)
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User with this email already exists." });
     }
 
-    if (!name || !email) {
-      return res.status(400).json({ message: "Name and Email are required" });
-    }
+    const defaultPassword = contactNumber || "Edumon@123"; 
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
 
-    const defaultPassword = phone ;
-    const hashedPassword = await bcrypt.hash(defaultPassword , 10)
-
-    // Create user in User collection
-        const newUser = new User({
-          name,
-          email,
-          password: hashedPassword,
-          role: "teacher",
-          contactNumber: phone,
-          firstLogin: true,
-        });
-
-        await newUser.save();
-
-    const newTeacher = new Teacher({
+    // 1. Create User first
+    const newUser = new User({
       name,
       email,
-      phone,
+      password: hashedPassword,
+      role: "teacher",
+      contactNumber,
+      firstLogin: true,
+    });
+    await newUser.save();
+
+    // 2. Create Teacher linked to User
+    const newTeacher = new Teacher({
+      userId: newUser._id,
+      name,
+      email,
+      contactNumber,
       subject,
       assignedClasses
     });
 
     const savedTeacher = await newTeacher.save();
-    res.status(201).json(savedTeacher);
+    
+    // 3. Send welcome email
+    await sendWelcomeEmail(email, name, defaultPassword);
+
+    res.status(201).json({
+      success: true,
+      message: "Teacher added successfully and credentials sent to email",
+      teacher: savedTeacher
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to add teacher", error });
+    console.error("Add Teacher Error:", error);
+    res.status(500).json({ message: "Failed to add teacher", error: error.message });
   }
 };
 
-
+// Get All Teachers (with pagination)
 export const getAllTeachers = async (req, res) => {
   try {
-    const teachers = await Teacher.find();
-    res.status(200).json(teachers);
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    const query = search 
+      ? { $or: [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] }
+      : {};
+
+    const [teachers, total] = await Promise.all([
+      Teacher.find(query).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Teacher.countDocuments(query)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      ...getPaginatedResponse(teachers, total, page, limit)
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch teachers", error });
+    res.status(500).json({ message: "Failed to fetch teachers", error: error.message });
   }
 };
 
+// Update Teacher (now syncs with User)
 export const updateTeacher = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    const { name, email, contactNumber, subject, assignedClasses } = req.body;
 
-    if (!updatedTeacher) {
+    const teacher = await Teacher.findById(id);
+    if (!teacher) {
       return res.status(404).json({ message: "Teacher not found" });
     }
 
-    res.status(200).json(updatedTeacher);
+    // Update User model fields if provided
+    if (name || email || contactNumber) {
+      await User.findByIdAndUpdate(teacher.userId, {
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(contactNumber && { contactNumber }),
+      });
+    }
+
+    // Update Teacher model
+    const updatedTeacher = await Teacher.findByIdAndUpdate(id, {
+      name, email, contactNumber, subject, assignedClasses
+    }, { new: true });
+
+    res.status(200).json({
+      success: true,
+      message: "Teacher updated successfully",
+      teacher: updatedTeacher
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update teacher", error });
+    res.status(500).json({ message: "Failed to update teacher", error: error.message });
   }
 };
 
+// Delete Teacher (now also deletes User)
 export const deleteTeacher = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedTeacher = await Teacher.findByIdAndDelete(id);
+    const teacher = await Teacher.findById(id);
 
-    if (!deletedTeacher) {
+    if (!teacher) {
       return res.status(404).json({ message: "Teacher not found" });
     }
 
-    res.status(200).json({ message: "Teacher deleted successfully" });
+    // Delete both linked records
+    await Promise.all([
+      User.findByIdAndDelete(teacher.userId),
+      Teacher.findByIdAndDelete(id)
+    ]);
+
+    res.status(200).json({ success: true, message: "Teacher and associated user deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete teacher", error });
+    res.status(500).json({ message: "Failed to delete teacher", error: error.message });
   }
 };
 

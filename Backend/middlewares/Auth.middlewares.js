@@ -1,75 +1,82 @@
 import jwt from 'jsonwebtoken';
-import Teacher from '../models/Teacher.models.js'; // Adjust path as needed
+import Teacher from '../models/Teacher.models.js';
 import Student from "../models/Student.models.js"
 import User from '../models/User.models.js';
 
+// Protect routes for teachers
 export const verifyTeacher = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Extract token from header
+  const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
+    return res.status(401).json({ success: false, message: 'No token provided' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-    // Check if the role is teacher
     if (decoded.role !== 'teacher') {
-      return res.status(403).json({ message: 'Not authorized as a teacher' });
+      return res.status(403).json({ success: false, message: 'Not authorized as a teacher' });
     }
 
-    // Find the Teacher document using user._id
-    const teacher = await Teacher.findOne({ user: decoded._id });
+    // Find the Teacher document using userId
+    const teacher = await Teacher.findOne({ userId: decoded.id });
 
     if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found for the given user ID' });
+      return res.status(404).json({ success: false, message: 'Teacher profile not found' });
     }
 
-    req.user = decoded;      // Contains the decoded user info
-    req.teacher = teacher;   // Contains the actual Teacher document (_id, etc.)
-
+    req.user = decoded;
+    req.teacher = teacher;
     next();
   } catch (error) {
     console.error('Token verification error:', error);
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 };
 
-// Protect routes for students by verifying JWT token
+// Protect routes for students
 export const protectStudent = async (req, res, next) => {
-  let token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+  const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ success: false, message: 'Not authorized, no token' });
   }
 
   try {
-    // Verify the token and extract the user data
-    const decoded = jwt.verify(token, process.env.SECRET_KEY); // Replace with your actual secret key
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-    // Attach the user (without password) to the request object
     const user = await User.findById(decoded.id).select('-password');
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!user || user.role !== 'student') {
+      return res.status(401).json({ success: false, message: 'Not authorized as a student' });
     }
 
-    req.user = user; // Attach the user data to the request object
-    console.log(req.user);
-
-    // Find the associated student based on the userId (assuming 'userId' field in Student model)
-    const student = await Student.findOne({ email: user.email }); // Use 'userId' field here
-    console.log("student",student)
-
+    const student = await Student.findOne({ userId: user._id });
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ success: false, message: 'Student profile not found' });
     }
 
-    req.student = student; // Attach the student data to the request object
-
-    next(); // Proceed to the next middleware or controller
+    req.user = user;
+    req.student = student;
+    next();
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ message: 'Token is not valid' });
+    console.error('Auth Middleware Error:', error);
+    res.status(401).json({ success: false, message: 'Token is not valid' });
   }
 };
+
+// Generic admin protector
+export const protectAdmin = async (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    try {
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Access denied: Admins only' });
+        }
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+}

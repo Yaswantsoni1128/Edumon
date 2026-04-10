@@ -1,4 +1,5 @@
 import Fee from "../models/Fee.models.js";
+import { getPaginatedResponse } from "../utils/pagination.js";
 
 export const addFee = async (req, res) => {
   try {
@@ -25,10 +26,48 @@ export const addFee = async (req, res) => {
 
 export const getAllFees = async (req, res) => {
   try {
-    const fees = await Fee.find().populate("student");
-    res.status(200).json(fees);
+    const { page = 1, limit = 8, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    const pipeline = [
+      {
+        $lookup: {
+          from: "students",
+          localField: "student",
+          foreignField: "_id",
+          as: "studentInfo"
+        }
+      },
+      { $unwind: "$studentInfo" }
+    ];
+
+    if (search) {
+      pipeline.push({
+        $match: {
+          "studentInfo.name": { $regex: search, $options: "i" }
+        }
+      });
+    }
+
+    const [fees, totalResults] = await Promise.all([
+      Fee.aggregate([...pipeline, { $sort: { createdAt: -1 } }, { $skip: skip }, { $limit: Number(limit) }]),
+      Fee.aggregate([...pipeline, { $count: "total" }])
+    ]);
+
+    const total = totalResults[0]?.total || 0;
+
+    // Map studentInfo back to 'student' key to maintain compatibility
+    const formattedFees = fees.map(f => ({
+      ...f,
+      student: f.studentInfo
+    }));
+
+    res.status(200).json({
+      success: true,
+      ...getPaginatedResponse(formattedFees, total, page, limit)
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch fee records", error });
+    res.status(500).json({ message: "Failed to fetch fee records", error: error.message });
   }
 };
 

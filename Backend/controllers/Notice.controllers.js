@@ -1,11 +1,35 @@
 import Notice from '../models/Notice.models.js';
-import User from '../models/User.models.js'
+import User from '../models/User.models.js';
+import { getPaginatedResponse } from '../utils/pagination.js';
 
-// Get all notices
+// Get all notices (with pagination and search)
 export const getAllNotices = async (req, res) => {
   try {
-    const notices = await Notice.find().sort({ createdAt: -1 });
-    res.json(notices);
+    const { page = 1, limit = 8, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    const query = search 
+      ? { 
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { message: { $regex: search, $options: 'i' } }
+          ] 
+        }
+      : {};
+
+    const [notices, total] = await Promise.all([
+      Notice.find(query)
+        .populate('postedBy', 'name')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Notice.countDocuments(query)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      ...getPaginatedResponse(notices, total, page, limit)
+    });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch notices.' });
   }
