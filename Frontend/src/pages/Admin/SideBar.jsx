@@ -1,4 +1,4 @@
-import { Bars3Icon, BellIcon, CurrencyRupeeIcon, HomeIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { AcademicCapIcon, Bars3Icon, BellIcon, CurrencyRupeeIcon, HomeIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -9,8 +9,9 @@ const SideBar = () => {
     {name: "Dashboard" , path: "/admin/dashboard" , icon: <HomeIcon className='w-6 h-6' />},
     {name: "Students" , path: "/admin/student" , icon: <UsersIcon className='w-6 h-6' />},
     {name: "Teachers" , path: "/admin/teacher" , icon: <UsersIcon className='w-6 h-6' />},
-    {name: "Fee" , path: "/admin/fee" , icon: <CurrencyRupeeIcon className='w-6 h-6' />},
+    {name: "Fees" , path: "/admin/fee" , icon: <CurrencyRupeeIcon className='w-6 h-6' />},
     {name: "Notices" , path: "/admin/notice" , icon: <BellIcon className='w-6 h-6' />},
+    {name: "Classes" , path: "/admin/classes" , icon: <AcademicCapIcon className='w-6 h-6' />},
   ]
   return (
     <div className={`flex ${isOpen?"w-64":"w-20"} min-h-screen bg-sky-600 text-white transition-all duration-300`}>

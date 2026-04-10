@@ -5,6 +5,8 @@ import StudentManagement from '../../pages/Admin/StudentManagement';
 import TeacherManagement from '../../pages/Admin/TeacherManagement';
 import FeeManagement from '../../pages/Admin/FeeManagement';
 import NoticeManagement from '../../pages/Admin/NoticeManagement';
+import ClassManagement from '../../pages/Admin/ClassManagement';
+import ClassDetail from '../../pages/Admin/ClassDetail';
 import NotFound from '../../pages/Admin/NotFound';
 import AdminLayout from '../../pages/Admin/AdminLayout'; // Layout with Sidebar
 
@@ -17,6 +19,8 @@ const AdminRoutes = () => {
         <Route path="teacher" element={<TeacherManagement />} />
         <Route path="fee" element={<FeeManagement />} />
         <Route path="notice" element={<NoticeManagement />} />
+        <Route path="classes" element={<ClassManagement />} />
+        <Route path="classes/:id" element={<ClassDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

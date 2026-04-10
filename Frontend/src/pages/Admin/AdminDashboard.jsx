@@ -1,5 +1,5 @@
 import React from "react";
-import { GraduationCap, Briefcase, IndianRupee, Megaphone, LogOut, ArrowRight, LayoutDashboard, Settings } from "lucide-react";
+import { GraduationCap, Briefcase, IndianRupee, Megaphone, LogOut, ArrowRight, LayoutDashboard, Settings, School } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useAuthStore from "../../store/useAuthStore";
@@ -44,6 +44,14 @@ const AdminDashboard = () => {
       color: "orange",
       link: "/admin/notice",
       action: "Publish Alert"
+    },
+    {
+      title: "Class Structures",
+      desc: "Define grade hierarchies, manage sections, and monitor classroom occupancy.",
+      icon: School,
+      color: "violet",
+      link: "/admin/classes",
+      action: "Manage Layout"
     }
   ];
 
