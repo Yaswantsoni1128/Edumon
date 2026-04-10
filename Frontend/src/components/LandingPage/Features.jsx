@@ -1,74 +1,117 @@
 import React from "react";
 import FeatureCard from "./FeatureCard";
+import { motion } from 'framer-motion';
+import { 
+  Users, 
+  GraduationCap, 
+  CreditCard, 
+  BellRing, 
+  CalendarCheck, 
+  FileText,
+  BadgeCheck
+} from 'lucide-react';
 
 const Features = () => {
   const featureList = [
     {
-      icon: "./teacher.png",
-      title: "Teacher management",
+      icon: Users,
+      title: "Teacher Portal",
       description:
-        "Cloud-based school management solution to help institutions record, track, and monitor students’ enrolment, grade, and attendance records.",
-        link: "/login"
-    },
-    {
-      icon: "./student.png",
-      title: "Student Management",
-      description:
-        "Cloud-based online system which enables faculty members to track class-specific attendance and grade records.",
+        "Comprehensive management for faculty records, schedules, and performance analytics.",
       link: "/login"
     },
     {
-      icon: "./money.png",
-      title: "Fee Management",
+      icon: GraduationCap,
+      title: "Student Hub",
       description:
-        "Technology leverages teaching-learning solutions through smart classroom infrastructure.",
+        "Centralized profiles for academic history, attendance trends, and behavioral reports.",
       link: "/login"
     },
     {
-      icon: "./notifications.png",
-      title: "Notices management",
+      icon: CreditCard,
+      title: "Fee Automation",
       description:
-        "A cloud-based scalable LMS platform for educational institutions of all sizes. It allows teachers to customize courses.",
-        link: "/login"
+        "Digital payment processing, automated invoicing, and clear financial statements.",
+      link: "/login"
     },
     {
-      icon: "./check.png",
-      title: "Attendence Management",
+      icon: BellRing,
+      title: "Notice Express",
       description:
-        "Our solutions integrate with a school's existing Student Information System and other teaching platforms.",
-        link: "/login"
+        "Instant delivery of school announcements, event updates, and emergency alerts.",
+      link: "/login"
     },
     {
-      icon: "./assignment.png",
-      title: "Assignment Management",
+      icon: CalendarCheck,
+      title: "Smart Attendance",
       description:
-        "We develop mobile learning solutions and content for web and specialized apps.",
-        link: "/login"
+        "Effortless daily logging with trend analysis to identify patterns and ensure safety.",
+      link: "/login"
+    },
+    {
+      icon: FileText,
+      title: "Assignments",
+      description:
+        "Interactive portal for distributing tasks and submission tracking for students.",
+      link: "/login"
     },
   ];
 
   return (
-    <div className="py-16 px-6 bg-gray-50">
-      {/* Heading */}
-      <div className="text-center mb-10">
-        <p className="text-4xl font-bold text-gray-900">Key Features</p>
-        <p className="w-3/5 mx-auto text-lg text-gray-700 mt-2 leading-relaxed">
-          Explore our advanced educational solutions designed for better
-          management and learning.
-        </p>
-      </div>
+    <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
+      <div className="max-w-7xl mx-auto">
+        {/* Heading Section */}
+        <motion.div
+          className="text-center mb-16 space-y-4"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-[10px] md:text-xs font-black uppercase tracking-widest border border-indigo-100">
+            <BadgeCheck size={14} />
+            <span>Powering Excellence</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight">
+            Key <span className="text-sky-600">Features</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-sm md:text-base text-gray-500 font-bold leading-relaxed">
+            Every tool you need to manage a modern educational institution efficiently.
+          </p>
+        </motion.div>
 
-      {/* Feature Cards using Flexbox */}
-      <div className="flex flex-wrap justify-center gap-10 ">
-        {featureList.map((item, idx) => (
-          <FeatureCard
-            key={idx}
-            icon={item.icon}
-            title={item.title}
-            description={item.description}
-            link = {item.link}
-          />
-        ))}
+        {/* Feature Cards Grid */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            visible: {
+              transition: {
+                staggerChildren: 0.1,
+              },
+            },
+          }}
+        >
+          {featureList.map((item, idx) => (
+            <motion.div
+              key={idx}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              className="h-full"
+            >
+              <FeatureCard
+                icon={item.icon}
+                title={item.title}
+                description={item.description}
+                link={item.link}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </div>
   );
