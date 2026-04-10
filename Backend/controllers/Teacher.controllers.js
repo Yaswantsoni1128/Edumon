@@ -1,74 +1,141 @@
 import Teacher from "../models/Teacher.models.js";
-import bcrypt from "bcrypt";
 import User from "../models/User.models.js";
+import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { getPaginatedResponse } from "../utils/pagination.js";
-
 import sendWelcomeEmail from "../utils/MailSender.js";
+import { createTeacherSchema, updateTeacherSchema } from "../validations/teacher.validation.js";
+import { generateTemplate, parseExcel } from "../utils/excelUtils.js";
 
-// Add Teacher
-export const addTeacher = async (req, res) => {
+// Create Teacher (Production Grade)
+export const createTeacher = async (req, res) => {
   try {
-    const { name, email, contactNumber, subject, assignedClasses } = req.body;
+    const { error, value } = createTeacherSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
-    // Check if both User and Teacher exist (using email)
+    const { fullName, email, phoneNumber } = value;
+
+    // Uniqueness check
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User with this email already exists." });
+    if (existingUser) return res.status(400).json({ message: "Email already registered." });
+
+    // Auto-generate employeeCode if missing
+    if (!value.employeeCode) {
+      value.employeeCode = `EMP-${Date.now()}`;
     }
 
-    const defaultPassword = contactNumber || "Edumon@123"; 
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    const rawPassword = phoneNumber || "Edumon@123";
+    const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
-    // 1. Create User first
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role: "teacher",
-      contactNumber,
-      firstLogin: true,
-    });
-    await newUser.save();
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // 2. Create Teacher linked to User
-    const newTeacher = new Teacher({
-      userId: newUser._id,
-      name,
-      email,
-      contactNumber,
-      subject,
-      assignedClasses
-    });
+    try {
+      const newUser = new User({
+        name: fullName,
+        email,
+        password: hashedPassword,
+        role: "teacher",
+        contactNumber: phoneNumber,
+        firstLogin: true,
+      });
+      await newUser.save({ session });
 
-    const savedTeacher = await newTeacher.save();
-    
-    // 3. Send welcome email
-    await sendWelcomeEmail(email, name, defaultPassword);
+      const newTeacher = new Teacher({
+        ...value,
+        userId: newUser._id,
+        createdBy: req.user?.id || req.user?._id,
+      });
+      await newTeacher.save({ session });
 
-    res.status(201).json({
-      success: true,
-      message: "Teacher added successfully and credentials sent to email",
-      teacher: savedTeacher
-    });
+      await session.commitTransaction();
+      
+      // Notify
+      sendWelcomeEmail(email, fullName, rawPassword).catch(e => console.error("Mail Error:", e));
+
+      res.status(201).json({ success: true, message: "Teacher registered successfully", data: newTeacher });
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
   } catch (error) {
-    console.error("Add Teacher Error:", error);
-    res.status(500).json({ message: "Failed to add teacher", error: error.message });
+    res.status(500).json({ message: error.message || "Registration failed." });
   }
 };
 
-// Get All Teachers (with pagination)
+// Update Teacher
+export const updateTeacher = async (req, res) => {
+  try {
+    const { error, value } = updateTeacherSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
+    const teacher = await Teacher.findByIdAndUpdate(
+      req.params.id, 
+      { ...value, updatedBy: req.user?.id || req.user?._id }, 
+      { new: true }
+    );
+
+    if (!teacher) return res.status(404).json({ message: "Teacher not found." });
+
+    // Sync User details
+    if (value.fullName || value.phoneNumber) {
+      await User.findByIdAndUpdate(teacher.userId, {
+        ...(value.fullName && { name: value.fullName }),
+        ...(value.phoneNumber && { contactNumber: value.phoneNumber })
+      });
+    }
+
+    res.status(200).json({ success: true, data: teacher });
+  } catch (error) {
+    res.status(500).json({ message: "Update failed." });
+  }
+};
+
+// Assign Assignments (Classes/Subjects)
+export const assignTeacherToClass = async (req, res) => {
+  const { teacherId, classIds, subjectIds, classTeacherOf } = req.body;
+  try {
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) return res.status(404).json({ message: "Teacher not found." });
+
+    if (classIds) teacher.classIds = classIds;
+    if (subjectIds) teacher.subjectIds = subjectIds;
+    if (classTeacherOf !== undefined) teacher.classTeacherOf = classTeacherOf;
+
+    await teacher.save();
+    res.status(200).json({ success: true, message: "Assignments updated.", data: teacher });
+  } catch (error) {
+    res.status(500).json({ message: "Assignment failed." });
+  }
+};
+
+// Get All Teachers (Pagination + Search)
 export const getAllTeachers = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "" } = req.query;
+    const { page = 1, limit = 10, search = "", department, designation } = req.query;
     const skip = (page - 1) * limit;
 
-    const query = search 
-      ? { $or: [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] }
-      : {};
+    const query = {
+      isActive: true,
+      ...(search && { 
+        $or: [
+          { fullName: { $regex: search, $options: "i" } },
+          { employeeCode: { $regex: search, $options: "i" } }
+        ] 
+      }),
+      ...(department && { department }),
+      ...(designation && { designation })
+    };
 
     const [teachers, total] = await Promise.all([
-      Teacher.find(query).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Teacher.find(query)
+        .populate('classIds', 'displayName')
+        .populate('classTeacherOf', 'displayName')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
       Teacher.countDocuments(query)
     ]);
 
@@ -77,104 +144,112 @@ export const getAllTeachers = async (req, res) => {
       ...getPaginatedResponse(teachers, total, page, limit)
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch teachers", error: error.message });
+    res.status(500).json({ message: "Fetch failed." });
   }
 };
-
-// Update Teacher (now syncs with User)
-export const updateTeacher = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, email, contactNumber, subject, assignedClasses } = req.body;
-
-    const teacher = await Teacher.findById(id);
-    if (!teacher) {
-      return res.status(404).json({ message: "Teacher not found" });
-    }
-
-    // Update User model fields if provided
-    if (name || email || contactNumber) {
-      await User.findByIdAndUpdate(teacher.userId, {
-        ...(name && { name }),
-        ...(email && { email }),
-        ...(contactNumber && { contactNumber }),
-      });
-    }
-
-    // Update Teacher model
-    const updatedTeacher = await Teacher.findByIdAndUpdate(id, {
-      name, email, contactNumber, subject, assignedClasses
-    }, { new: true });
-
-    res.status(200).json({
-      success: true,
-      message: "Teacher updated successfully",
-      teacher: updatedTeacher
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update teacher", error: error.message });
-  }
-};
-
-// Delete Teacher (now also deletes User)
-export const deleteTeacher = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const teacher = await Teacher.findById(id);
-
-    if (!teacher) {
-      return res.status(404).json({ message: "Teacher not found" });
-    }
-
-    // Delete both linked records
-    await Promise.all([
-      User.findByIdAndDelete(teacher.userId),
-      Teacher.findByIdAndDelete(id)
-    ]);
-
-    res.status(200).json({ success: true, message: "Teacher and associated user deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to delete teacher", error: error.message });
-  }
-};
-
-
-// get teacher by id 
 
 export const getTeacherById = async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log("id:", id);
-
-    // Validate the provided ID format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid teacher ID format" });
-    }
-
-    // Find the user using the provided ID
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const user_email = user.email;
-
-    // Find teacher using the email associated with the user
-    const teacher = await Teacher.findOne({ email: user_email });
-    console.log("teacher:", teacher);
-
-    if (!teacher) {
-      return res.status(404).json({ message: "Teacher not found" });
-    }
-
-    // Return the teacher data
-    res.status(200).json({
-      success: true,
-      message: "Teacher profile fetched successfully",
-      data: teacher,
-    });
+    const teacher = await Teacher.findById(req.params.id)
+      .populate('classIds')
+      .populate('classTeacherOf')
+      .populate('userId', 'role lastLogin');
+    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+    res.status(200).json({ success: true, data: teacher });
   } catch (error) {
-    console.error("Error fetching teacher:", error);
-    res.status(500).json({ message: "Server error while fetching teacher" });
+    res.status(500).json({ message: "Fetch failed" });
   }
+};
+
+// Delete Teacher (Soft Delete)
+export const deleteTeacher = async (req, res) => {
+    try {
+        await Teacher.findByIdAndUpdate(req.params.id, { isActive: false });
+        res.status(200).json({ success: true, message: "Teacher record archived." });
+    } catch (error) {
+        res.status(500).json({ message: "Archive failed." });
+    }
+}
+
+// BULK OPERATIONS
+export const getBulkTemplate = async (req, res) => {
+    const headers = ["FULL_NAME", "EMAIL", "PHONE_NUMBER", "GENDER", "DATE_OF_BIRTH", "TEACHER_TYPE", "DESIGNATION", "EXPERIENCE_YEARS", "FIXED_SALARY", "STREET", "VILLAGE", "CITY", "PINCODE"];
+    const buffer = generateTemplate(headers);
+    res.setHeader('Content-Disposition', 'attachment; filename="teacher_template.xlsx"');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+};
+
+export const bulkUploadTeachers = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+        const rows = parseExcel(req.file.buffer);
+        const results = { success: 0, skipped: 0, errors: [] };
+
+        for (const row of rows) {
+            try {
+                const email = String(row.EMAIL || "").trim();
+                if (!email) continue;
+
+                const existing = await User.findOne({ email });
+                if (existing) {
+                    results.skipped++;
+                    continue;
+                }
+
+                const rawPassword = String(row.PHONE_NUMBER || "Edumon@123");
+                const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+                const session = await mongoose.startSession();
+                session.startTransaction();
+
+                try {
+                    const newUser = new User({
+                        name: row.FULL_NAME,
+                        email,
+                        password: hashedPassword,
+                        role: "teacher",
+                        contactNumber: String(row.PHONE_NUMBER),
+                        firstLogin: true
+                    });
+                    await newUser.save({ session });
+
+                    const newTeacher = new Teacher({
+                        fullName: row.FULL_NAME,
+                        email,
+                        phoneNumber: String(row.PHONE_NUMBER),
+                        gender: row.GENDER || "Male",
+                        dateOfBirth: row.DATE_OF_BIRTH ? new Date(row.DATE_OF_BIRTH) : undefined,
+                        teacherType: row.TEACHER_TYPE || "Primary",
+                        designation: row.DESIGNATION || "Teacher",
+                        experienceYears: Number(row.EXPERIENCE_YEARS || 0),
+                        address: {
+                            street: row.STREET,
+                            village: row.VILLAGE,
+                            city: row.CITY,
+                            pincode: String(row.PINCODE)
+                        },
+                        salary: { fixedAmount: Number(row.FIXED_SALARY || 0) },
+                        userId: newUser._id,
+                        createdBy: req.user?.id,
+                        employeeCode: `EMP-${Date.now()}-${results.success}`
+                    });
+                    await newTeacher.save({ session });
+
+                    await session.commitTransaction();
+                    results.success++;
+                } catch (err) {
+                    await session.abortTransaction();
+                    throw err;
+                } finally {
+                    session.endSession();
+                }
+            } catch (err) {
+                results.errors.push({ row: row.FULL_NAME, error: err.message });
+            }
+        }
+        res.status(200).json({ success: true, message: "Bulk upload completed", data: results });
+    } catch (error) {
+        res.status(500).json({ message: "Bulk upload failed" });
+    }
 };
