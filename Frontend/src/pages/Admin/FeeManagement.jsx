@@ -234,13 +234,13 @@ const FeeManagement = () => {
 
                 <form onSubmit={handleAction} className="space-y-4">
                   {!isUpdating && (
-                    <input type="text" placeholder="STUDENT OBJECT ID" value={formData.studentId} onChange={(e) => setFormData({...formData, studentId: e.target.value})} required className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all placeholder:text-gray-300" />
+                    <input type="text" placeholder="STUDENT OBJECT ID" value={formData.studentId} onChange={(e) => setFormData({...formData, studentId: e.target.value})} required className="w-full px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-950 placeholder:text-gray-400" />
                   )}
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <input type="number" placeholder="AMOUNT (INR)" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} required className="px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all placeholder:text-gray-300" />
+                    <input type="number" placeholder="AMOUNT (INR)" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} required className="px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-950 placeholder:text-gray-400" />
                     
-                    <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-900">
+                    <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-950">
                       <option value="Unpaid">UNPAID</option>
                       <option value="Paid">PAID</option>
                       <option value="Partial">PARTIAL</option>
@@ -250,7 +250,7 @@ const FeeManagement = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <div className="absolute top-2 left-4 text-[8px] font-black text-gray-400 uppercase">Payment Date</div>
-                      <input type="date" value={formData.paidDate} onChange={(e) => setFormData({...formData, paidDate: e.target.value})} required className="w-full px-6 pt-6 pb-4 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-900" />
+                      <input type="date" value={formData.paidDate} onChange={(e) => setFormData({...formData, paidDate: e.target.value})} required className="w-full px-6 pt-6 pb-4 bg-gray-100 border border-gray-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-950" />
                     </div>
                     
                     <select value={formData.paymentMethod} onChange={(e) => setFormData({...formData, paymentMethod: e.target.value})} required className="px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-emerald-100 transition-all text-sky-900">
