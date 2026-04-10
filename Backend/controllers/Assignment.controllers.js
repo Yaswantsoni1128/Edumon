@@ -48,7 +48,7 @@ export const createAssignment = async (req, res) => {
 export const getAssignmentsForStudent = async (req, res) => {
   try {
     // Extract the student class from the authenticated user object
-    const studentClass = req.student.class; 
+    const studentClass = req.student.currentClassId; 
     const student = req.student
     const user = req.user ;
     console.log("user",user)

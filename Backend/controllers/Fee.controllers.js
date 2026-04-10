@@ -44,7 +44,7 @@ export const getAllFees = async (req, res) => {
     if (search) {
       pipeline.push({
         $match: {
-          "studentInfo.name": { $regex: search, $options: "i" }
+          "studentInfo.fullName": { $regex: search, $options: "i" }
         }
       });
     }

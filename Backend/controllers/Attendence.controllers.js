@@ -101,7 +101,7 @@ export const getAttendanceByDate = async (req, res) => {
     const { date } = req.params;
 
     const records = await Attendance.find({ date: new Date(date) })
-      .populate('student', 'name rollNo class')
+      .populate('student', 'fullName rollNumber currentClassId')
       .populate('markedBy', 'name email');
 
     res.status(200).json(records);

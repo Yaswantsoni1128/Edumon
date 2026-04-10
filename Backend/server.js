@@ -10,6 +10,7 @@ import feeRoutes from "./routes/Fee.routes.js";
 import noticeRoutes from "./routes/Notice.routes.js"
 import assignmentRoutes from "./routes/Assignment.routes.js"
 import attendenceRoutes from "./routes/Attendence.routes.js"
+import classRoutes from "./routes/Class.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,7 @@ app.use("/api/fees", feeRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/attendence', attendenceRoutes);
+app.use('/api/classes', classRoutes);
 
 
 // Root route
