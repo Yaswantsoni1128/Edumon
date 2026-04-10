@@ -1,48 +1,90 @@
 import React from 'react';
 import HeroCard from './HeroCard';
+import { motion } from 'framer-motion';
+import { ShieldCheck, Users, Zap, CheckCircle2 } from 'lucide-react';
 
 const Hero2 = () => {
   const cards = [
     {
-      icon: "./school.png",
-      title: "Seamless School Management",
+      icon: Users,
+      title: "Seamless Management",
       content: "Effortlessly track attendance, grades, and student progress with our intuitive platform, reducing administrative workload."
     },
     {
-      icon: "./family.png",
-      title: "Real-Time Parent Engagement",
+      icon: Zap,
+      title: "Real-Time Engagement",
       content: "Keep parents informed with instant updates on assignments, fees, and school activities through a dedicated portal."
     },
     {
-      icon: "./cyber-security.png",
-      title: "Secure & Scalable Solution",
-      content: "Built with robust security and scalability, Edumon ensures data protection while adapting to your school's evolving needs."
+      icon: ShieldCheck,
+      title: "Secure Solution",
+      content: "Built with robust security and scalability, Edumon ensures data protection while adapting to your school's needs."
     }
   ];
 
   return (
-    <div className="m-5 p-6 md:p-10 flex flex-col lg:flex-row gap-6 items-center justify-between">
-      
-      {/* Left Section */}
-      <div className="bg-sky-600 w-full lg:w-1/3 p-6 rounded-xl flex flex-col gap-4 shadow-xl text-center lg:text-left">
-        <h2 className="text-white text-2xl md:text-3xl font-bold">Why Choose Edumon for your school?</h2>
-        <p className="text-white text-sm md:text-base">
-          Edumon simplifies school operations with Teacher & Student Management, ensuring seamless attendance and performance tracking.
-          Our Notices & Assignment Management keeps everyone updated, while Fee & Attendance Tracking automates payments and records accurately.
-          A smart, cloud-based solution for effortless school administration and improved learning experiences.
-        </p>
-      </div>
+    <div className="max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+        {/* Left Section (Trust Box) */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="lg:col-span-5 bg-sky-600 p-10 md:p-14 rounded-[3rem] flex flex-col justify-center gap-8 shadow-2xl shadow-sky-100 text-white relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-[5rem]"></div>
+          
+          <div className="space-y-4">
+            <h2 className="text-3xl md:text-4xl font-black leading-tight tracking-tight uppercase">
+              Why Choose <br/> <span className="text-sky-300">Edumon?</span>
+            </h2>
+            <div className="w-16 h-1.5 bg-sky-300 rounded-full"></div>
+          </div>
 
-      {/* Right Section (Cards) */}
-      <div className="w-full lg:w-2/3 flex flex-wrap gap-4 justify-center">
-        {cards.map((item, idx) => (
-          <HeroCard
-            key={idx}
-            icon={item.icon}
-            title={item.title}
-            content={item.content}
-          />
-        ))}
+          <p className="text-sky-50 text-base leading-relaxed font-medium">
+            We provide a comprehensive digital ecosystem that simplifies institution management and enhances the educational journey for everyone involved.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+            {['Cloud-based', 'Real-time', 'Secure', 'Intuitive'].map((item) => (
+              <div key={item} className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-sky-100">
+                <CheckCircle2 size={18} className="text-sky-300" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Right Section (Cards Grid) */}
+        <div className="lg:col-span-7 flex flex-col justify-center">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={{
+              visible: { transition: { staggerChildren: 0.1 } }
+            }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+          >
+            {cards.map((item, idx) => (
+              <motion.div
+                key={idx}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 }
+                }}
+                className={idx === 2 ? "sm:col-span-2" : ""}
+              >
+                <HeroCard
+                  icon={item.icon}
+                  title={item.title}
+                  content={item.content}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
