@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { motion } from "framer-motion";
+import { Loader2, User, Mail, Lock, Phone, School, ArrowRight } from "lucide-react";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   const [fullName, setFullName] = useState("");
@@ -10,18 +13,14 @@ const SignUp = () => {
   const [schoolName, setSchoolName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      toast.error("Passwords do not match!");
       return;
     }
 
@@ -31,140 +30,186 @@ const SignUp = () => {
         name: fullName,
         email,
         password,
-        role: "admin", // Admin-only signup
+        role: "admin",
         contactNumber,
         schoolName,
       });
 
-      console.log(res)
-
-      setSuccess("Admin account created successfully!");
+      toast.success("Admin account created successfully!");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      const message = err.response?.data?.message || "Something went wrong during signup.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex py-5 items-center justify-center bg-gradient-to-r from-sky-100 to-sky-200">
-      <div className="mt-20 flex w-3/4 max-w-4xl overflow-hidden rounded-lg bg-white shadow-lg">
-        {/* Left Section */}
-        <div className="hidden w-1/2 bg-gradient-to-b from-sky-600 to-sky-800 p-10 text-white md:flex flex-col justify-center items-center gap-4">
-          <div className="bg-white p-5 rounded-full">
-            <img src="./smartSchoolTracker.jpg" alt="Edumon" className="w-32 h-32 rounded-3xl" />
-          </div>
-          <div className="text-2xl font-bold">WELCOME TO EDUMON</div>
-          <p className="text-center text-sm">
-            EduMon is a smart school tracking platform that helps parents monitor attendance,
-            assignments, fees, academic progress, and communication seamlessly.
+    <div className="flex min-h-screen items-center justify-center bg-[#f0f4f8] p-4 py-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        {/* Left Section - Hero */}
+        <div className="hidden w-1/2 bg-gradient-to-br from-indigo-700 via-sky-700 to-sky-600 p-12 text-white md:flex flex-col justify-center items-center text-center">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="bg-white/10 backdrop-blur-md p-6 rounded-3xl mb-8 border border-white/20 shadow-xl"
+          >
+            <img 
+              src="./smartSchoolTracker.jpg" 
+              alt="EdumonLogo" 
+              className="w-32 h-32 rounded-2xl object-cover"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/150?text=Edumon";
+              }}
+            />
+          </motion.div>
+          <h1 className="text-3xl font-bold mb-4 tracking-tight">JOIN EDUMON</h1>
+          <div className="w-12 h-1 bg-sky-400 rounded-full mb-6"></div>
+          <p className="text-sky-100 text-sm leading-relaxed max-w-xs">
+            Empower your institution with smart tracking and seamless management tools.
           </p>
         </div>
 
-        {/* Right Section */}
-        <div className="w-full p-10 md:w-1/2">
-          <h2 className="mb-6 text-2xl font-semibold text-gray-700">Admin Sign Up</h2>
+        {/* Right Section - Form */}
+        <div className="w-full p-8 md:p-12 md:w-1/2">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-800">Admin Sign Up</h2>
+            <p className="text-gray-500 mt-2 text-sm italic">
+              Note: Students and Teachers accounts are created via the Admin Dashboard.
+            </p>
+          </div>
 
-          <p className="text-sm text-gray-500 mb-4">
-            Only admins can sign up using this form. Students and Teachers will be created by the admin.
-          </p>
-
-          {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
-          {success && <div className="mb-4 text-green-600 text-sm">{success}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4 flex justify-between items-center gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium text-gray-600">Admin Name</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <User size={14} className="text-sky-600" />
+                  Full Name
+                </label>
                 <input
+                  disabled={loading}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   type="text"
                   required
-                  className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                  placeholder="Yaswant Soni"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 outline-none"
+                  placeholder="John Doe"
                 />
               </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium text-gray-600">Contact Number</label>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <Phone size={14} className="text-sky-600" />
+                  Contact
+                </label>
                 <input
+                  disabled={loading}
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   type="tel"
                   required
-                  className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                  placeholder="9999999999"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 outline-none"
+                  placeholder="9876543210"
                 />
               </div>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">School Name</label>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                <School size={14} className="text-sky-600" />
+                School Name
+              </label>
               <input
+                disabled={loading}
                 value={schoolName}
                 onChange={(e) => setSchoolName(e.target.value)}
                 type="text"
                 required
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="Bal Bharati Sr Sec School"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 outline-none"
+                placeholder="Excellence Public School"
               />
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">Email</label>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                <Mail size={14} className="text-sky-600" />
+                Email Address
+              </label>
               <input
+                disabled={loading}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="yaswantsoni@gmail.com"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 outline-none"
+                placeholder="admin@school.com"
               />
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="********"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">Confirm Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="********"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <Lock size={14} className="text-sky-600" />
+                  Password
+                </label>
+                <input
+                  disabled={loading}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 outline-none"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <Lock size={14} className="text-sky-600" />
+                  Confirm
+                </label>
+                <input
+                  disabled={loading}
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 outline-none"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              disabled= "true"
-              // disabled={loading}
-              className="w-full  rounded bg-gradient-to-r from-sky-600 to-sky-700 px-4 py-2 text-white font-semibold hover:opacity-90"
+              disabled={loading}
+              className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-sky-600 to-indigo-700 px-6 py-3.5 text-white font-bold shadow-lg shadow-sky-200 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed group mt-2"
             >
-              {loading ? "Creating Account..." : "SIGN UP"}
+              <span className={`flex items-center justify-center gap-2 transition-all ${loading ? 'opacity-0' : 'opacity-100'}`}>
+                CREATE ACCOUNT
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              </span>
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 className="animate-spin" size={24} />
+                </div>
+              )}
             </button>
           </form>
 
-          <div className="mt-4 text-center text-sm">
+          <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-500 hover:underline">
-              Log In
+            <Link to="/login" className="font-bold text-sky-600 hover:text-sky-700 transition-colors underline-offset-4 hover:underline">
+              Sign In
             </Link>
-          </div>
+          </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -1,108 +1,146 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { motion } from "framer-motion";
+import { Loader2, Mail, Lock, UserCircle, ArrowRight } from "lucide-react";
+import useAuthStore from "../../store/useAuthStore";
 
 const Login = () => {
   const [userType, setUserType] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login, loading } = useAuthStore();
   const navigate = useNavigate();
-  const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/users/login`, {
-        email,
-        password,
-        role: userType, // 🔥 Send userType (Student/Teacher/Admin)
-      });
-
-      const { token, user } = response.data;
-
-      // Save token and user to localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (user.role === "teacher") {
-        navigate("/teacher/dashboard");
-      } else if (user.role === "student") {
-        navigate("/student/dashboard");
-      }
-    } catch (err) {
-      console.log(err.response?.data); // Debugging
-      setError(err.response?.data?.message || "Login failed");
-    }
+    await login(email, password, userType, navigate);
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-r from-sky-100 to-sky-200">
-      <div className="mt-20 flex w-3/4 max-w-4xl overflow-hidden rounded-lg bg-white shadow-lg">
-        {/* Left Section */}
-        <div className="hidden w-1/2 bg-gradient-to-b from-sky-600 to-sky-800 p-10 text-white md:flex flex-col justify-center items-center gap-4">
-          <div className="bg-white p-5 rounded-full">
-            <img src="./smartSchoolTracker.jpg" alt="Edumon" className="w-32 h-32 rounded-3xl" />
-          </div>
-          <div className="text-2xl font-bold">WELCOME TO EDUMON</div>
-          <p className="text-center text-sm">
-            EduMon is a smart school tracking platform that helps parents monitor attendance, assignments, fees, academic progress, and communication seamlessly.
+    <div className="flex flex-col min-h-[calc(100vh-80px)] items-center justify-center p-4 md:p-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex w-full max-w-4xl overflow-hidden rounded-[2.5rem] bg-white shadow-2xl shadow-sky-100/50 border border-gray-100"
+      >
+        {/* Left Section - Hero */}
+        <div className="hidden w-1/2 bg-gradient-to-br from-sky-600 via-sky-700 to-indigo-800 p-12 text-white md:flex flex-col justify-center items-center text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-sky-400/20 rounded-full -ml-20 -mb-20 blur-3xl"></div>
+          
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="bg-white/10 backdrop-blur-md p-6 rounded-[2rem] mb-8 border border-white/20 shadow-xl relative z-10"
+          >
+            <img 
+              src="./smartSchoolTracker.jpg" 
+              alt="EdumonLogo" 
+              className="w-24 h-24 rounded-2xl object-cover shadow-lg"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/150?text=Edumon";
+              }}
+            />
+          </motion.div>
+          <h1 className="text-2xl font-black mb-4 tracking-tighter relative z-10 uppercase">WELCOME TO EDUMON</h1>
+          <div className="w-10 h-1 bg-sky-400 rounded-full mb-6 relative z-10"></div>
+          <p className="text-sky-100 text-xs font-bold leading-relaxed max-w-xs relative z-10 uppercase tracking-widest opacity-80">
+            The intelligent school tracking ecosystem. Experience seamless monitoring of attendance, academics, and communication.
           </p>
         </div>
 
-        {/* Right Section */}
-        <div className="w-full p-10 md:w-1/2">
-          <h2 className="mb-6 text-2xl font-semibold text-gray-700">Log In</h2>
-          {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">Login As</label>
-              <select
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                value={userType}
-                onChange={(e) => setUserType(e.target.value)}
-              >
-                <option value="student">Login as Student</option>
-                <option value="teacher">Login as Teacher</option>
-                <option value="admin">Login as Admin</option>
-              </select>
+        {/* Right Section - Form */}
+        <div className="w-full p-10 md:p-14 md:w-1/2 bg-white">
+          <div className="mb-10 text-center md:text-left">
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Sign In</h2>
+            <p className="text-gray-400 mt-2 text-sm font-semibold">Enter your credentials to access your account</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
+                <UserCircle size={14} className="text-sky-600" />
+                Login As
+              </label>
+              <div className="relative group">
+                <select
+                  disabled={loading}
+                  className="w-full appearance-none rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-bold text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100 outline-none disabled:opacity-60 cursor-pointer"
+                  value={userType}
+                  onChange={(e) => setUserType(e.target.value)}
+                >
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="admin">Administrator</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 group-focus-within:text-sky-600 transition-colors">
+                  <ArrowRight size={16} className="rotate-90" />
+                </div>
+              </div>
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">Email</label>
+
+            <div>
+              <label className="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-[0.2em] flex items-center gap-2">
+                <Mail size={14} className="text-sky-600" />
+                Email Address
+              </label>
               <input
                 type="email"
+                disabled={loading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="yaswantsoni@gmail.com"
+                className="w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-bold text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100 outline-none disabled:opacity-60"
+                placeholder="yash@edumon.com"
                 required
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-600">Password</label>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Lock size={14} className="text-sky-600" />
+                  Password
+                </label>
+                <a href="#" className="text-[10px] font-black text-sky-600 hover:text-sky-700 transition-colors uppercase tracking-widest">Forgot?</a>
+              </div>
               <input
                 type="password"
+                disabled={loading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded border px-4 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="********"
+                className="w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-bold text-gray-700 transition-all focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-100 outline-none disabled:opacity-60"
+                placeholder="••••••••"
                 required
               />
             </div>
-            <div className="mb-4 flex justify-between text-sm">
-              <a href="#" className="text-blue-500 hover:underline">Forgot Password?</a>
-              <Link to="/signup" className="text-blue-500 hover:underline">Not a Member yet?</Link>
-            </div>
-            <button type="submit" className="w-full rounded bg-gradient-to-r from-sky-600 to-sky-700 px-4 py-2 text-white font-semibold hover:opacity-90 cursor-pointer">
-              SIGN IN
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-700 px-6 py-4 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-sky-100 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:opacity-70 disabled:cursor-not-allowed group"
+            >
+              <span className={`flex items-center justify-center gap-2 transition-all ${loading ? 'opacity-0' : 'opacity-100'}`}>
+                SIGN IN
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </span>
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 className="animate-spin" size={20} />
+                </div>
+              )}
             </button>
+
+            <p className="text-center text-[10px] font-black text-gray-400 mt-8 uppercase tracking-[0.15em]">
+              Not a member yet?{" "}
+              <Link to="/signup" className="text-sky-600 hover:text-sky-700 transition-colors hover:underline underline-offset-4">
+                Create Account
+              </Link>
+            </p>
           </form>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
