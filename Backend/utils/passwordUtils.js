@@ -3,9 +3,7 @@
  * 3char of name, 3 char of rollnumber, 3 char of father name
  */
 export const generateInstitutionalPassword = (name, rollNo, fatherName) => {
-  const n = name.replace(/\s/g, '').substring(0, 3);
-  const r = rollNo.replace(/\s/g, '').substring(0, 3);
-  const f = (fatherName || 'EDU').replace(/\s/g, '').substring(0, 3);
+  const pass = "stu@1234"
   
-  return (n + r + f).toLowerCase();
-};
+    return pass;
+  };
