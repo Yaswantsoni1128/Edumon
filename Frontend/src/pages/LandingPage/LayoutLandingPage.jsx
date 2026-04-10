@@ -5,11 +5,11 @@ import { Outlet } from 'react-router-dom'
 
 const LayoutLandingPage = () => {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Navbar/>
-        <div >
-          <Outlet/>
-        </div>
+      <main className="flex-grow pt-16 md:pt-20">
+        <Outlet/>
+      </main>
       <Footer/>
     </div>
   )
