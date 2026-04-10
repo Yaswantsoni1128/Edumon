@@ -38,23 +38,16 @@ export const getAllNotices = async (req, res) => {
 // Create a new notice
 export const createNotice = async (req, res) => {
   try {
-    console.log("Received body:", req.body); // Debugging
-
     const { title, message, target, visibleTill } = req.body;
+    const authorId = req.user?.id || req.user?._id;
 
-    // Find the user by role 'admin' instead of username
-    const user = await User.findOne({ role: 'admin' });  // Adjusted lookup by role
-    if (!user) {
-      return res.status(400).json({ message: 'Admin user not found.' });
-    }
-
-    console.log("Found User:", user);  // Debugging: print the user found
+    if (!authorId) return res.status(401).json({ message: "Identity unresolved." });
 
     const newNotice = new Notice({ 
       title, 
       message, 
       target, 
-      postedBy: user._id,  // Use the ObjectId here
+      postedBy: authorId,
       visibleTill 
     });
 

@@ -178,19 +178,8 @@ const NoticeManagement = () => {
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowModal(false)}
-              className="absolute inset-0 bg-sky-950/20 backdrop-blur-sm"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] border border-white shadow-2xl overflow-hidden"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowModal(false)} className="absolute inset-0 bg-sky-950/20 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg bg-white rounded-[2.5rem] border border-white shadow-2xl overflow-hidden" >
               <div className="p-8 md:p-12">
                 <div className="flex justify-between items-center mb-8">
                   <div className="flex items-center gap-4 text-orange-600">
@@ -207,12 +196,12 @@ const NoticeManagement = () => {
                 </div>
 
                 <form onSubmit={handleAction} className="space-y-4">
-                  <input type="text" placeholder="NOTICE TITLE" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all placeholder:text-gray-300" />
+                  <input type="text" placeholder="NOTICE TITLE" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required className="w-full px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all text-sky-950 placeholder:text-gray-400" />
                   
-                  <textarea placeholder="DETAILED MESSAGE..." rows={4} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} required className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all placeholder:text-gray-300 resize-none" />
+                  <textarea placeholder="DETAILED MESSAGE..." rows={4} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} required className="w-full px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all text-sky-950 placeholder:text-gray-400 resize-none" />
 
                   <div className="grid grid-cols-2 gap-4">
-                    <select value={formData.target} onChange={(e) => setFormData({...formData, target: e.target.value})} className="px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all text-sky-900">
+                    <select value={formData.target} onChange={(e) => setFormData({...formData, target: e.target.value})} className="px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all text-sky-950">
                       <option value="All">TARGET: ALL</option>
                       <option value="Teachers">TARGET: TEACHERS</option>
                       <option value="Students">TARGET: STUDENTS</option>
@@ -220,7 +209,7 @@ const NoticeManagement = () => {
                     
                     <div className="relative">
                       <div className="absolute top-2 left-4 text-[8px] font-black text-gray-400 uppercase">Visible Till</div>
-                      <input type="date" value={formData.visibleTill} onChange={(e) => setFormData({...formData, visibleTill: e.target.value})} required className="w-full px-6 pt-6 pb-4 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all text-sky-900" />
+                      <input type="date" value={formData.visibleTill} onChange={(e) => setFormData({...formData, visibleTill: e.target.value})} required className="w-full px-6 pt-6 pb-4 bg-gray-100 border border-gray-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-orange-100 transition-all text-sky-950" />
                     </div>
                   </div>
 

@@ -1,4 +1,5 @@
 import express from 'express';
+import { protectAdmin } from '../middlewares/Auth.middlewares.js';
 import {
   getAllNotices,
   createNotice,
@@ -11,9 +12,9 @@ import {
 const router = express.Router();
 
 router.get('/', getAllNotices);
-router.post('/', createNotice);
-router.delete('/:id', deleteNotice);
-router.put('/:id', updateNotice);
+router.post('/', protectAdmin, createNotice);
+router.delete('/:id', protectAdmin, deleteNotice);
+router.put('/:id', protectAdmin, updateNotice);
 router.get("/student", getStudentNotices);
 router.get("/teacher", getTeacherNotices);
 
