@@ -2,320 +2,261 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import Student from "../models/Student.models.js";
 import User from "../models/User.models.js";
+import Class from "../models/Class.models.js";
 import { generateInstitutionalPassword } from "../utils/passwordUtils.js";
 import sendWelcomeEmail from "../utils/MailSender.js";
 import { getPaginatedResponse } from "../utils/pagination.js";
-import xlsx from "xlsx";
-import fs from "fs";
+import { createStudentSchema, updateStudentSchema } from "../validations/student.validation.js";
+import { generateTemplate, parseExcel } from "../utils/excelUtils.js";
 
-// Add Student (Single)
-export const addStudent = async (req, res) => {
+// Create Student (Production Grade)
+export const createStudent = async (req, res) => {
   try {
-    const { name, email, rollNo, class: studentClass, parentContact, fatherName } = req.body;
+    const { error, value } = createStudentSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
-    if (!name || !email || !rollNo || !fatherName) {
-        return res.status(400).json({ message: "Mandatory fields: Name, Email, Father's Name, Roll No." });
+    if (!value.admissionNumber) {
+        value.admissionNumber = `ADM-${Date.now()}`;
     }
+    const { fullName, email, admissionNumber, currentClassId, parentName, rollNumber, parentContact } = value;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User with this email already exists." });
-    }
+    const [existingUser, existingStudent] = await Promise.all([
+      User.findOne({ email }),
+      Student.findOne({ admissionNumber })
+    ]);
 
-    // Generate custom institutional password
-    const rawPassword = generateInstitutionalPassword(name, rollNo, fatherName);
+    if (existingUser) return res.status(400).json({ message: "Email already registered." });
+    if (existingStudent) return res.status(400).json({ message: "Admission Number already exists." });
+
+    // Use parentName for password if fatherName is missing
+    const rawPassword = generateInstitutionalPassword(fullName, rollNumber || "000", parentName || "EDU");
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
-    // 1. Create User in User collection
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role: "student",
-      contactNumber: parentContact,
-      firstLogin: true,
-    });
-    await newUser.save();
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // 2. Create student linked to User
-    const newStudent = new Student({
-      userId: newUser._id,
-      name,
-      email,
-      fatherName,
-      rollNo,
-      class: studentClass,
-      parentContact,
-      password: hashedPassword, 
-    });
-
-    const savedStudent = await newStudent.save();
-
-    // 3. Send credentials via email
-    await sendWelcomeEmail(email, name, rawPassword);
-
-    res.status(201).json({
-      success: true,
-      message: "Student created successfully and credentials sent to email.",
-      student: savedStudent,
-    });
-  } catch (error) {
-    console.error("Error adding student:", error);
-    res.status(500).json({ message: "Server error. Please try again later." });
-  }
-};
-
-// Bulk Upload Students
-export const bulkUploadStudents = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded." });
+      const newUser = new User({
+        name: fullName,
+        email,
+        password: hashedPassword,
+        role: "student",
+        contactNumber: parentContact,
+        firstLogin: true,
+      });
+      await newUser.save({ session });
+
+      const newStudent = new Student({
+        ...value,
+        userId: newUser._id,
+        createdBy: req.user?.id || req.user?._id,
+      });
+      await newStudent.save({ session });
+
+      if (currentClassId) {
+        const targetClass = await Class.findById(currentClassId);
+        if (targetClass) {
+          targetClass.studentIds.push(newStudent._id);
+          targetClass.currentStrength += 1;
+          await targetClass.save({ session });
         }
+      }
 
-        const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
-        const sheetName = workbook.SheetNames[0];
-        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-        const results = { success: 0, failed: 0, errors: [] };
-
-        for (const row of data) {
-            try {
-                const { Name, Email, RollNo, Class, ParentContact, FatherName } = row;
-
-                if (!Name || !Email || !RollNo || !FatherName) {
-                    throw new Error(`Missing mandatory fields for student: ${Name || 'Unknown'}`);
-                }
-
-                const existingUser = await User.findOne({ email: Email });
-                if (existingUser) throw new Error(`Email ${Email} already registered.`);
-
-                const rawPassword = generateInstitutionalPassword(Name, RollNo.toString(), FatherName);
-                const hashedPassword = await bcrypt.hash(rawPassword, 10);
-
-                const newUser = new User({
-                    name: Name,
-                    email: Email,
-                    password: hashedPassword,
-                    role: "student",
-                    contactNumber: ParentContact,
-                    firstLogin: true,
-                });
-                await newUser.save();
-
-                const newStudent = new Student({
-                    userId: newUser._id,
-                    name: Name,
-                    email: Email,
-                    fatherName: FatherName,
-                    rollNo: RollNo.toString(),
-                    class: Class,
-                    parentContact: ParentContact,
-                    password: hashedPassword,
-                });
-                await newStudent.save();
-
-                // Send email synchronously or asynchronously? Async is better for bulk.
-                sendWelcomeEmail(Email, Name, rawPassword).catch(e => console.error("Async Mail Fail:", e));
-
-                results.success++;
-            } catch (err) {
-                results.failed++;
-                results.errors.push(err.message);
-            }
-        }
-
-        res.status(200).json({
-            success: true,
-            message: `Bulk processing complete. ${results.success} uploaded, ${results.failed} failed.`,
-            results
-        });
-
-    } catch (error) {
-        console.error("Bulk Upload Error:", error);
-        res.status(500).json({ message: "Critical error during bulk processing." });
+      await session.commitTransaction();
+      sendWelcomeEmail(email, fullName, rawPassword).catch(e => console.error("Mail Error:", e));
+      res.status(201).json({ success: true, message: "Student enrolled successfully", data: newStudent });
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
     }
-};
-
-// Get all students (with pagination and search)
-export const getAllStudents = async (req, res) => {
-  try {
-    const { page = 1, limit = 10, search = "", class: studentClass } = req.query;
-    const skip = (page - 1) * limit;
-
-    const query = {
-      ...(search && { 
-        $or: [
-          { name: { $regex: search, $options: "i" } }, 
-          { rollNo: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } }
-        ] 
-      }),
-      ...(studentClass && { class: studentClass })
-    };
-
-    const [students, total] = await Promise.all([
-      Student.find(query).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
-      Student.countDocuments(query)
-    ]);
-
-    res.status(200).json({
-      success: true,
-      ...getPaginatedResponse(students, total, page, limit)
-    });
   } catch (error) {
-    console.error("Error fetching students:", error);
-    res.status(500).json({ message: "Server error while fetching students" });
+    res.status(500).json({ message: error.message || "Enrollment failed." });
   }
 };
 
-// Get student by ID (profile)
-export const getStudentById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid student ID format" });
-    }
-
-    // Try finding by _id first, then by userId
-    let student = await Student.findById(id);
-    if (!student) {
-        student = await Student.findOne({ userId: id });
-    }
-
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Student profile fetched successfully",
-      data: student,
-    });
-  } catch (error) {
-    console.error("Error fetching student:", error);
-    res.status(500).json({ message: "Server error while fetching student" });
-  }
-};
-
-// Update student (Syncs with User)
+// Update Student
 export const updateStudent = async (req, res) => {
   try {
-    const { name, email, rollNo, class: studentClass, parentContact, fatherName } = req.body;
-    const { id } = req.params;
+    const { error, value } = updateStudentSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const student = await Student.findById(id);
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+    const student = await Student.findByIdAndUpdate(req.params.id, { ...value, updatedBy: req.user?.id || req.user?._id }, { new: true });
+    if (!student) return res.status(404).json({ message: "Not found." });
+
+    if (value.fullName || value.email || value.parentContact) {
+      await User.findByIdAndUpdate(student.userId, {
+        ...(value.fullName && { name: value.fullName }),
+        ...(value.email && { email: value.email }),
+        ...(value.parentContact && { contactNumber: value.parentContact })
+      });
     }
-
-    // Update User model fields
-    if (name || email || parentContact) {
-        await User.findByIdAndUpdate(student.userId, {
-            ...(name && { name }),
-            ...(email && { email }),
-            ...(parentContact && { contactNumber: parentContact }),
-        });
-    }
-
-    // Update Student model
-    const updatedStudent = await Student.findByIdAndUpdate(id, {
-        name, email, rollNo, class: studentClass, parentContact, fatherName
-    }, { new: true });
-
-    res.status(200).json({
-        success: true,
-        message: "Student updated successfully",
-        student: updatedStudent
-    });
-  } catch (error) {
-    console.error("Error updating student:", error);
-    res.status(500).json({ message: "Server error while updating student" });
-  }
+    res.status(200).json({ success: true, student });
+  } catch (error) { res.status(500).json({ message: "Update failed." }); }
 };
 
-// Delete student (Syncs with User)
-export const deleteStudent = async (req, res) => {
+// Promote Student
+export const promoteStudent = async (req, res) => {
+  const { studentId, targetClassId, resetAttendance = true } = req.body;
   try {
-    const { id } = req.params;
-    const student = await Student.findById(id);
+    const [student, targetClass] = await Promise.all([Student.findById(studentId), Class.findById(targetClassId)]);
+    if (!student || !targetClass) throw new Error("Entity not found.");
 
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+    if (student.currentClassId) {
+      await Class.findByIdAndUpdate(student.currentClassId, { $pull: { studentIds: studentId }, $inc: { currentStrength: -1 } });
     }
 
-    // Delete both linked records
-    await Promise.all([
-        User.findByIdAndDelete(student.userId),
-        Student.findByIdAndDelete(id)
+    targetClass.studentIds.push(studentId);
+    targetClass.currentStrength += 1;
+    await targetClass.save();
+
+    student.currentClassId = targetClassId;
+    student.section = targetClass.section;
+    student.academicYear = targetClass.academicYear;
+    if (resetAttendance) student.attendancePercentage = 0;
+    await student.save();
+
+    res.status(200).json({ success: true, message: "Promoted successfully." });
+  } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// Get All (Pagination + Filters)
+export const getAllStudents = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = "", classId, gender, feeStatus } = req.query;
+    const skip = (page - 1) * limit;
+    const query = {
+      isActive: true,
+      ...(search && { 
+        $or: [
+            { fullName: { $regex: search, $options: "i" } }, 
+            { admissionNumber: { $regex: search, $options: "i" } },
+            { srNo: { $regex: search, $options: "i" } }
+        ] 
+      }),
+      ...(classId && { currentClassId: classId }),
+      ...(gender && { gender }),
+      ...(feeStatus && { feeStatus })
+    };
+    const [students, total] = await Promise.all([
+      Student.find(query).populate('currentClassId', 'displayName').sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Student.countDocuments(query)
     ]);
-
-    res.status(200).json({ success: true, message: "Student and associated user deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting student:", error);
-    res.status(500).json({ message: "Server error while deleting student" });
-  }
+    res.status(200).json({ success: true, ...getPaginatedResponse(students, total, page, limit) });
+  } catch (error) { res.status(500).json({ message: "Fetch failed." }); }
 };
 
+export const getStudentById = async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id).populate('currentClassId');
+        res.status(200).json({ success: true, data: student });
+    } catch (e) { res.status(500).json({ message: "Error" }); }
+};
 
-// Get logged-in student's profile using userId
+export const deleteStudent = async (req, res) => {
+    try {
+        await Student.findByIdAndUpdate(req.params.id, { isActive: false });
+        res.status(200).json({ success: true, message: "Deactivated" });
+    } catch (e) { res.status(500).json({ message: "Fail" }); }
+};
+
 export const getStudentProfile = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        statusCode: 400,
-        success: false,
-        message: "Invalid student ID",
-      });
-    }
-
-    const student = await Student.findOne({ userId: id });
-
-    if (!student) {
-      return res.status(404).json({
-        statusCode: 404,
-        success: false,
-        message: "Student profile not found",
-      });
-    }
-
-    res.status(200).json({
-      statusCode: 200,
-      success: true,
-      message: "Student profile fetched successfully",
-      data: student,
-    });
-  } catch (error) {
-    console.error("Error fetching student profile:", error);
-    res.status(500).json({
-      statusCode: 500,
-      success: false,
-      message: "Internal server error while fetching profile",
-    });
-  }
+    try {
+        const student = await Student.findOne({ userId: req.params.id }).populate('currentClassId');
+        res.status(200).json({ success: true, data: student });
+    } catch (e) { res.status(500).json({ message: "Fail" }); }
 };
 
-// Get students by class
 export const getStudentsByClass = async (req, res) => {
-  try {
-    const { selectedClass } = req.params;
+    try {
+        const students = await Student.find({ currentClassId: req.params.selectedClass });
+        res.status(200).json({ success: true, data: students });
+    } catch (e) { res.status(500).json({ message: "Fail" }); }
+};
 
-    const students = await Student.find({ class: selectedClass }).sort({ createdAt: -1 });
+// BULK OPERATIONS
+export const getBulkTemplate = async (req, res) => {
+    const headers = ["FULL_NAME", "EMAIL", "PARENT_NAME", "PARENT_CONTACT", "ADMISSION_NUMBER", "SR_NO", "ROLL_NUMBER", "GENDER", "DATE_OF_BIRTH", "STREET", "VILLAGE", "CITY", "PINCODE"];
+    const buffer = generateTemplate(headers);
+    res.setHeader('Content-Disposition', 'attachment; filename="student_template.xlsx"');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+};
 
-    if (!students || students.length === 0) {
-      return res.status(404).json({
-        message: `No students found in class ${selectedClass}`,
-      });
+export const bulkUploadStudents = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: "No file uploaded." });
+        const rows = parseExcel(req.file.buffer);
+        const results = { success: 0, skipped: 0, errors: [] };
+
+        for (const row of rows) {
+            try {
+                const email = String(row.EMAIL || "").trim();
+                if (!email) continue;
+
+                const existingUser = await User.findOne({ email });
+                if (existingUser) {
+                    results.skipped++;
+                    continue;
+                }
+
+                const fullName = String(row.FULL_NAME || "");
+                const rollNumber = String(row.ROLL_NUMBER || "000");
+                const parentName = String(row.PARENT_NAME || "EDU");
+                const rawPassword = generateInstitutionalPassword(fullName, rollNumber, parentName);
+                const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+                const session = await mongoose.startSession();
+                session.startTransaction();
+
+                try {
+                    const newUser = new User({
+                        name: fullName,
+                        email,
+                        password: hashedPassword,
+                        role: "student",
+                        contactNumber: String(row.PARENT_CONTACT),
+                        firstLogin: true,
+                    });
+                    await newUser.save({ session });
+
+                    const newStudent = new Student({
+                        userId: newUser._id,
+                        fullName,
+                        email,
+                        admissionNumber: String(row.ADMISSION_NUMBER || `ADM-${Date.now()}`),
+                        srNo: String(row.SR_NO || ""),
+                        rollNumber,
+                        parentName,
+                        parentContact: String(row.PARENT_CONTACT),
+                        gender: row.GENDER || "Male",
+                        dateOfBirth: row.DATE_OF_BIRTH ? new Date(row.DATE_OF_BIRTH) : undefined,
+                        address: {
+                            street: row.STREET,
+                            village: row.VILLAGE,
+                            city: row.CITY,
+                            pincode: String(row.PINCODE)
+                        },
+                        createdBy: req.user?.id
+                    });
+                    await newStudent.save({ session });
+
+                    await session.commitTransaction();
+                    sendWelcomeEmail(email, fullName, rawPassword).catch(e => console.error("Mail fail:", e));
+                    results.success++;
+                } catch (err) {
+                    await session.abortTransaction();
+                    throw err;
+                } finally {
+                    session.endSession();
+                }
+            } catch (err) {
+                results.errors.push({ row: row.FULL_NAME, error: err.message });
+            }
+        }
+        res.status(200).json({ success: true, message: "Bulk upload completed", data: results });
+    } catch (error) {
+        res.status(500).json({ message: "Bulk processing failed." });
     }
-
-    res.status(200).json({
-      message: `Students of class ${selectedClass} fetched successfully`,
-      data: students,
-    });
-  } catch (error) {
-    console.error("Error fetching students by class:", error);
-    res.status(500).json({ message: "Server error while fetching students by class" });
-  }
 };

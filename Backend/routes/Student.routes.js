@@ -1,13 +1,26 @@
-import express from "express";
-import { addStudent, getAllStudents, getStudentById, updateStudent, deleteStudent, getStudentProfile, getStudentsByClass, bulkUploadStudents } from "../controllers/Student.controllers.js";
+import { 
+  createStudent, 
+  getAllStudents, 
+  getStudentById, 
+  updateStudent, 
+  deleteStudent, 
+  getStudentProfile, 
+  getStudentsByClass, 
+  bulkUploadStudents,
+  promoteStudent,
+  getBulkTemplate 
+} from "../controllers/Student.controllers.js";
 import { protectAdmin } from "../middlewares/Auth.middlewares.js";
 import multer from "multer";
+import express from "express";  
 
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post("/", protectAdmin, addStudent);
+router.post("/", protectAdmin, createStudent);
+router.post("/promote", protectAdmin, promoteStudent);
+router.get('/template', protectAdmin, getBulkTemplate);
 router.post("/bulk", protectAdmin, upload.single("file"), bulkUploadStudents);
 router.get("/", getAllStudents);
 router.get("/:id", getStudentById);
