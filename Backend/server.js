@@ -22,8 +22,28 @@ connectDB();
 const app = express();
 
 // Middleware
-// import cors from 'cors';
-app.use(cors({ origin: `${process.env.FRONTEND_URL}`, credentials: true }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,   // deployed frontend (if any)
+  "http://localhost:5173",    // local dev
+  "http://10.0.2.2:5173",    // emulator dev
+  "capacitor://localhost",   // Android APK (MOST IMPORTANT)
+  "http://localhost"         // fallback
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (mobile apps, postman, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      console.log("Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 
 app.use(express.json());
 
