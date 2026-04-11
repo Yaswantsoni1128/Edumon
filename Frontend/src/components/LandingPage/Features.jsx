@@ -62,20 +62,20 @@ const Features = () => {
       <div className="max-w-7xl mx-auto">
         {/* Heading Section */}
         <motion.div
-          className="text-center mb-16 space-y-4"
+          className="text-center mb-12 md:mb-16 lg:mb-20 space-y-4"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-[10px] md:text-xs font-black uppercase tracking-widest border border-indigo-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-[9px] md:text-xs font-black uppercase tracking-widest border border-indigo-100">
             <BadgeCheck size={14} />
             <span>Powering Excellence</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight uppercase">
             Key <span className="text-sky-600">Features</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-sm md:text-base text-gray-500 font-bold leading-relaxed">
+          <p className="max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-gray-500 font-bold leading-relaxed uppercase tracking-wide opacity-80">
             Every tool you need to manage a modern educational institution efficiently.
           </p>
         </motion.div>

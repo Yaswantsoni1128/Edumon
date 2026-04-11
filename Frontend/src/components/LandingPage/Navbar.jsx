@@ -83,10 +83,10 @@ const Navbar = () => {
       <AnimatePresence>
         {menuOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-3xl"
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-3xl z-50"
           >
             <div className="px-4 py-8 space-y-4">
               {navLinks.map(({ name, path, icon: Icon }) => (

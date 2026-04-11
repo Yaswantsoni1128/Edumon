@@ -10,7 +10,7 @@ const Getintouch = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="max-w-4xl mx-auto bg-gray-50 rounded-[3rem] p-8 md:p-16 border border-gray-100 shadow-2xl shadow-gray-200/50"
+        className="max-w-4xl mx-auto bg-gray-50 rounded-[2rem] md:rounded-[3rem] p-6 sm:p-10 md:p-16 border border-gray-100 shadow-2xl shadow-gray-200/50"
       >
         <div className="text-center mb-12 space-y-4">
           <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Send us a message</h3>

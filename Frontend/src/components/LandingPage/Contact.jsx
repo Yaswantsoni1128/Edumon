@@ -31,16 +31,16 @@ const Contact = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-20 space-y-4"
+          className="text-center mb-16 md:mb-20 space-y-4"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 text-orange-700 text-xs font-bold uppercase tracking-widest border border-orange-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 text-orange-700 text-[10px] md:text-xs font-black uppercase tracking-widest border border-orange-100">
             <MessageSquare size={14} />
             <span>Connect with Us</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight uppercase">
             We're here to <span className="text-orange-600">Help You</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-lg text-gray-600 font-medium leading-relaxed">
+          <p className="max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-gray-500 font-bold leading-relaxed uppercase tracking-wide opacity-80">
             Reach out to our experts for a personalized walkthrough of the Edumon ecosystem.
           </p>
         </motion.div>

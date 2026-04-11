@@ -23,15 +23,15 @@ const Hero2 = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+    <div className="max-w-7xl mx-auto py-16 md:py-24 px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-12 items-stretch">
         {/* Left Section (Trust Box) */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="lg:col-span-5 bg-sky-600 p-10 md:p-14 rounded-[3rem] flex flex-col justify-center gap-8 shadow-2xl shadow-sky-100 text-white relative overflow-hidden"
+          className="lg:col-span-5 bg-sky-600 p-8 md:p-14 rounded-[2.5rem] md:rounded-[3rem] flex flex-col justify-center gap-6 md:gap-8 shadow-2xl shadow-sky-100 text-white relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-[5rem]"></div>
           

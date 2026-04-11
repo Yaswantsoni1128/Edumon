@@ -41,3 +41,15 @@
 .glass {
   @apply bg-white/70 backdrop-blur-md border border-white/20;
 }
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-sky-700/50 rounded-full hover:bg-sky-600 transition-colors;
+  }
+}
