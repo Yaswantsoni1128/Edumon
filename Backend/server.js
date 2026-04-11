@@ -27,7 +27,9 @@ const allowedOrigins = [
   "http://localhost:5173",    // local dev
   "http://10.0.2.2:5173",    // emulator dev
   "capacitor://localhost",   // Android APK (MOST IMPORTANT)
-  "http://localhost"         // fallback
+  "http://localhost",         // fallback
+  "https://localhost"  
+
 ];
 
 app.use(cors({
