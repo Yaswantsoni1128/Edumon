@@ -10,6 +10,7 @@ const useAuthStore = create((set) => ({
   login: async (email, password, role, navigate) => {
     set({ loading: true });
     try {
+       console.log(import.meta.env.VITE_BASE_URL)
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/users/login`, {
         email,
         password,
